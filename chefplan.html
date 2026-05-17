@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ChefPlan</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#0A0F14; --surface:#111820; --card:#161E28; --card2:#1C2632;
+  --green:#2ECC71; --green2:#27AE60; --blue:#3498DB; --gold:#F39C12;
+  --red:#E74C3C; --purple:#9B59B6; --white:#F0F4F8; --gray:#7F8C8D; --light:#BDC3C7;
+}
+body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--white); min-height:100vh; overflow-x:hidden; }
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background: radial-gradient(ellipse 60% 40% at 20% 10%,rgba(46,204,113,.06) 0%,transparent 60%),
+              radial-gradient(ellipse 50% 50% at 80% 80%,rgba(52,152,219,.04) 0%,transparent 60%);
+}
+.screen { display:none; min-height:100vh; flex-direction:column; position:relative; z-index:1; }
+.screen.active { display:flex; }
+.loader { display:flex; align-items:center; justify-content:center; padding:40px 0; }
+.loader-dots { display:flex; gap:6px; }
+.loader-dots span { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 1.2s ease-in-out infinite; }
+.loader-dots span:nth-child(2){animation-delay:.2s} .loader-dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.loading-overlay { position:fixed; inset:0; background:rgba(10,15,20,.85); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; z-index:500; opacity:0; pointer-events:none; transition:opacity .2s; }
+.loading-overlay.show { opacity:1; pointer-events:all; }
+.toast { position:fixed; bottom:40px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--white); color:#000; padding:12px 24px; border-radius:100px; font-size:13px; font-weight:600; transition:transform .3s cubic-bezier(.34,1.56,.64,1); z-index:600; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* HEADER */
+.tg-header { background:var(--card); padding:14px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,.05); flex-shrink:0; }
+.tg-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--green),var(--blue)); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.tg-name { font-size:13px; font-weight:600; }
+.tg-status { font-size:10px; color:var(--green); }
+.screen-header { background:var(--card); padding:14px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,.05); flex-shrink:0; }
+.back-btn-round { width:32px; height:32px; border-radius:50%; background:var(--card2); border:1px solid rgba(255,255,255,.08); color:var(--white); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.screen-header-title { font-size:15px; font-weight:600; flex:1; }
+.screen-header-action { font-size:11px; color:var(--green); cursor:pointer; padding:6px 12px; border-radius:20px; background:rgba(46,204,113,.1); border:1px solid rgba(46,204,113,.2); font-weight:600; }
+
+/* DASHBOARD */
+.dash-hero { background:linear-gradient(160deg,#162235 0%,#0F1A24 100%); padding:20px 16px 16px; position:relative; overflow:hidden; flex-shrink:0; }
+.dash-hero::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:radial-gradient(circle,rgba(46,204,113,.12),transparent 70%); }
+.dash-greeting { font-size:11px; color:var(--gray); margin-bottom:4px; letter-spacing:.05em; }
+.dash-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; margin-bottom:12px; }
+.dash-date-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(46,204,113,.12); border:1px solid rgba(46,204,113,.25); border-radius:20px; padding:4px 12px; font-size:10px; color:var(--green); }
+.dash-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:12px 16px; flex-shrink:0; }
+.stat-card { background:var(--card); border-radius:14px; padding:12px 8px; text-align:center; border:1px solid rgba(255,255,255,.04); }
+.stat-num { font-size:22px; font-weight:700; line-height:1; }
+.stat-label { font-size:9px; color:var(--gray); margin-top:4px; }
+.dash-section-title { padding:8px 16px 6px; font-size:10px; font-weight:600; color:var(--gray); letter-spacing:1.5px; text-transform:uppercase; flex-shrink:0; }
+.dash-tasks-scroll { flex:1; overflow-y:auto; }
+.task-item { margin:0 16px 8px; background:var(--card); border-radius:14px; padding:10px 12px; display:flex; align-items:center; gap:10px; border:1px solid rgba(255,255,255,.04); cursor:pointer; transition:border-color .15s; }
+.task-item:active { border-color:var(--green); }
+.task-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.task-info { flex:1; min-width:0; }
+.task-name { font-size:12px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.task-meta { font-size:10px; color:var(--gray); margin-top:2px; }
+.task-time-sm { font-size:10px; color:var(--blue); font-weight:600; flex-shrink:0; }
+.dash-buttons { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px 16px 28px; flex-shrink:0; }
+.btn-mini { background:var(--card2); border-radius:12px; padding:12px; text-align:center; font-size:11px; font-weight:600; border:1px solid rgba(255,255,255,.06); cursor:pointer; color:var(--white); transition:opacity .15s; }
+.btn-mini:active { opacity:.7; }
+.btn-mini.primary { grid-column:1/-1; background:linear-gradient(135deg,var(--green2),#1E8449); border-color:transparent; color:white; }
+
+/* TASK LIST */
+.filter-tabs { display:flex; gap:6px; padding:10px 16px; overflow-x:auto; flex-shrink:0; }
+.filter-tabs::-webkit-scrollbar { display:none; }
+.filter-tab { background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:20px; padding:6px 14px; font-size:11px; white-space:nowrap; cursor:pointer; color:var(--gray); transition:all .15s; flex-shrink:0; }
+.filter-tab.active { background:rgba(46,204,113,.15); border-color:var(--green); color:var(--green); }
+.tasks-scroll { flex:1; overflow-y:auto; padding-bottom:20px; }
+.task-group-date { padding:10px 16px 6px; font-size:10px; font-weight:600; color:var(--gray); letter-spacing:1.5px; text-transform:uppercase; }
+.task-card { margin:0 16px 8px; background:var(--card); border-radius:16px; padding:12px 12px 12px 16px; border:1px solid rgba(255,255,255,.04); position:relative; overflow:hidden; cursor:pointer; transition:border-color .15s,transform .15s; }
+.task-card:active { transform:scale(.98); }
+.task-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:3px 0 0 3px; }
+.task-card.green::before{background:var(--green)} .task-card.blue::before{background:var(--blue)}
+.task-card.gold::before{background:var(--gold)} .task-card.red::before{background:var(--red)}
+.task-card.purple::before{background:var(--purple)}
+.task-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.task-card-name { font-size:13px; font-weight:600; line-height:1.3; }
+.task-card-venue { font-size:10px; color:var(--gray); margin-top:2px; }
+.task-status-badge { font-size:9px; padding:3px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
+.badge-planned{background:rgba(52,152,219,.15);color:var(--blue)}
+.badge-reminded{background:rgba(243,156,18,.15);color:var(--gold)}
+.badge-done{background:rgba(46,204,113,.15);color:var(--green)}
+.task-card-bottom { display:flex; align-items:center; justify-content:space-between; }
+.task-time-badge { font-size:11px; color:var(--light); }
+.task-actions { display:flex; gap:6px; }
+.task-action-btn { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; border:none; background:transparent; transition:transform .1s; }
+.task-action-btn:active { transform:scale(.9); }
+.empty-state { text-align:center; padding:60px 20px; color:var(--gray); }
+.empty-icon { font-size:48px; margin-bottom:12px; }
+.empty-text { font-size:14px; line-height:1.5; }
+
+/* DETAIL */
+.detail-hero { background:linear-gradient(160deg,#0F2418 0%,#0A1510 100%); padding:20px 16px; flex-shrink:0; }
+.detail-task-name { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; line-height:1.2; margin:8px 0; }
+.detail-meta-text { font-size:12px; color:var(--gray); }
+.detail-card { margin:16px; background:var(--card); border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.05); }
+.detail-row { padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.04); display:flex; align-items:center; gap:12px; }
+.detail-row:last-child { border-bottom:none; }
+.detail-icon { font-size:16px; width:24px; text-align:center; flex-shrink:0; }
+.detail-lbl { font-size:10px; color:var(--gray); letter-spacing:.5px; margin-bottom:2px; }
+.detail-val { font-size:14px; font-weight:500; }
+.detail-edit { color:var(--gray); cursor:pointer; font-size:14px; padding:4px; }
+.action-buttons { padding:0 16px 32px; display:flex; flex-direction:column; gap:10px; }
+.action-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.action-btn { padding:14px; border-radius:14px; border:none; font-size:12px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity .15s; }
+.action-btn:active { opacity:.8; }
+.btn-done { background:linear-gradient(135deg,var(--green2),#1E8449); color:white; }
+.btn-edit-a { background:var(--card2); color:var(--white); }
+.btn-del { background:rgba(231,76,60,.12); color:var(--red); }
+
+/* ADD TASK */
+.add-hero { background:linear-gradient(160deg,#1A1035 0%,#0F1020 100%); padding:20px 16px; flex-shrink:0; }
+.add-hero h2 { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; margin-top:4px; }
+.form-scroll { flex:1; overflow-y:auto; padding:0 16px 32px; }
+.form-section { margin-top:16px; }
+.form-lbl { font-size:10px; font-weight:600; color:var(--gray); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; display:block; }
+.venue-chips { display:flex; gap:6px; flex-wrap:wrap; }
+.chip { background:var(--card2); border:1px solid rgba(255,255,255,.08); border-radius:20px; padding:7px 14px; font-size:11px; font-weight:500; cursor:pointer; transition:all .15s; color:var(--light); }
+.chip.active { background:rgba(46,204,113,.15); border-color:var(--green); color:var(--green); }
+.form-input { width:100%; background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px 14px; font-size:13px; color:var(--white); font-family:'DM Sans',sans-serif; outline:none; transition:border-color .15s; }
+.form-input:focus { border-color:var(--green); }
+textarea.form-input { resize:none; line-height:1.5; }
+.date-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.date-btn { background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px 8px; text-align:center; font-size:11px; cursor:pointer; color:var(--light); transition:all .15s; }
+.date-btn.active { background:rgba(46,204,113,.12); border-color:var(--green); color:var(--green); }
+.date-btn-sub { font-size:9px; color:var(--gray); margin-top:2px; }
+.save-btn { width:100%; margin-top:20px; background:linear-gradient(135deg,var(--green2),#1E8449); border-radius:14px; padding:15px; font-size:14px; font-weight:700; cursor:pointer; border:none; color:white; font-family:'DM Sans',sans-serif; }
+.save-btn:active { opacity:.85; }
+
+/* VENUES */
+.venues-scroll { flex:1; overflow-y:auto; padding:12px 16px 32px; }
+.venue-card { background:var(--card); border:1px solid rgba(255,255,255,.05); border-radius:16px; padding:16px; margin-bottom:10px; display:flex; align-items:center; gap:12px; }
+.venue-icon-circle { width:44px; height:44px; border-radius:14px; background:rgba(46,204,113,.1); border:1px solid rgba(46,204,113,.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.venue-name-text { font-size:15px; font-weight:600; }
+.venue-sub { font-size:11px; color:var(--gray); margin-top:2px; }
+
+/* MODAL */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(6px); z-index:400; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .25s; }
+.modal-overlay.show { opacity:1; pointer-events:all; }
+.modal { background:var(--surface); border-radius:24px 24px 0 0; padding:24px 20px 40px; width:100%; border:1px solid rgba(255,255,255,.06); transform:translateY(100%); transition:transform .3s cubic-bezier(.34,1.2,.64,1); }
+.modal-overlay.show .modal { transform:translateY(0); }
+.modal-handle { width:36px; height:4px; background:rgba(255,255,255,.1); border-radius:2px; margin:0 auto 20px; }
+.modal-title { font-size:11px; font-weight:600; color:var(--gray); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px; }
+.modal-input { width:100%; background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:14px 16px; color:var(--white); font-family:'DM Sans',sans-serif; font-size:15px; outline:none; margin-bottom:12px; }
+.modal-input:focus { border-color:var(--green); }
+.modal-save { width:100%; padding:14px; background:linear-gradient(135deg,var(--green2),#1E8449); border:none; border-radius:12px; color:white; font-size:13px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; }
+.modal-cancel { width:100%; padding:12px; background:transparent; border:none; color:var(--gray); font-size:13px; cursor:pointer; margin-top:8px; font-family:'DM Sans',sans-serif; }
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-up { animation:fadeUp .25s ease forwards; opacity:0; }
+::-webkit-scrollbar { width:0; }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading"><div class="loader-dots"><span></span><span></span><span></span></div></div>
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">РЕДАКТИРОВАТЬ</div>
+    <input class="modal-input" id="modal-input" type="text">
+    <button class="modal-save" onclick="saveEdit()">СОХРАНИТЬ</button>
+    <button class="modal-cancel" onclick="closeModal()">Отмена</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="tg-header">
+    <div class="tg-avatar">👨‍🍳</div>
+    <div><div class="tg-name">ChefPlan</div><div class="tg-status">● онлайн</div></div>
+  </div>
+  <div class="dash-hero">
+    <div class="dash-greeting">ПЛАНИРОВЩИК ШЕФА</div>
+    <div class="dash-title" id="dash-title">Добрый день!</div>
+    <div class="dash-date-badge">📅 <span id="dash-date">—</span></div>
+  </div>
+  <div class="dash-stats">
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="s-today">—</div><div class="stat-label">Сегодня</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--blue)" id="s-week">—</div><div class="stat-label">Неделя</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--gold)" id="s-venues">—</div><div class="stat-label">Заведений</div></div>
+  </div>
+  <div class="dash-section-title">БЛИЖАЙШИЕ ЗАДАЧИ</div>
+  <div class="dash-tasks-scroll" id="dash-tasks"><div class="loader"><div class="loader-dots"><span></span><span></span><span></span></div></div></div>
+  <div class="dash-buttons">
+    <div class="btn-mini" onclick="loadTasks('today')">📋 Сегодня</div>
+    <div class="btn-mini" onclick="loadTasks('week')">📅 Неделя</div>
+    <div class="btn-mini" onclick="loadTasks('all')">🗂 Все задачи</div>
+    <div class="btn-mini" onclick="loadVenues()">🏠 Заведения</div>
+    <div class="btn-mini primary" onclick="showAddTask()">+ Добавить задачу</div>
+  </div>
+</div>
+
+<!-- TASKS -->
+<div class="screen" id="screen-tasks">
+  <div class="screen-header">
+    <button class="back-btn-round" onclick="goHome()">←</button>
+    <div class="screen-header-title" id="tasks-title">Задачи</div>
+    <div class="screen-header-action" onclick="showAddTask()">+ Добавить</div>
+  </div>
+  <div class="filter-tabs">
+    <div class="filter-tab active" onclick="setFilter('all',this)">Все</div>
+    <div class="filter-tab" onclick="setFilter('today',this)">Сегодня</div>
+    <div class="filter-tab" onclick="setFilter('week',this)">Неделя</div>
+  </div>
+  <div class="tasks-scroll" id="task-list"></div>
+</div>
+
+<!-- DETAIL -->
+<div class="screen" id="screen-detail">
+  <div class="screen-header">
+    <button class="back-btn-round" id="detail-back">←</button>
+    <div class="screen-header-title">Задача</div>
+  </div>
+  <div class="detail-hero">
+    <div class="task-status-badge" id="d-badge" style="display:inline-block;margin-bottom:8px"></div>
+    <div class="detail-task-name" id="d-task"></div>
+    <div class="detail-meta-text" id="d-meta"></div>
+  </div>
+  <div class="detail-card">
+    <div class="detail-row"><div class="detail-icon">🏠</div><div style="flex:1"><div class="detail-lbl">ЗАВЕДЕНИЕ</div><div class="detail-val" id="d-venue"></div></div><div class="detail-edit" onclick="editField('venue')">✏️</div></div>
+    <div class="detail-row"><div class="detail-icon">📅</div><div style="flex:1"><div class="detail-lbl">ДАТА</div><div class="detail-val" id="d-date"></div></div><div class="detail-edit" onclick="editField('date')">✏️</div></div>
+    <div class="detail-row"><div class="detail-icon">🕐</div><div style="flex:1"><div class="detail-lbl">ВРЕМЯ</div><div class="detail-val" id="d-time"></div></div><div class="detail-edit" onclick="editField('time')">✏️</div></div>
+  </div>
+  <div class="action-buttons">
+    <div class="action-row">
+      <button class="action-btn btn-done" onclick="markDone()">✅ Выполнено</button>
+      <button class="action-btn btn-edit-a" onclick="editField('task')">✏️ Изменить</button>
+    </div>
+    <button class="action-btn btn-del" onclick="confirmDelete()">🗑 Удалить задачу</button>
+  </div>
+</div>
+
+<!-- ADD TASK -->
+<div class="screen" id="screen-add">
+  <div class="screen-header">
+    <button class="back-btn-round" id="add-back">←</button>
+    <div class="screen-header-title">Новая задача</div>
+  </div>
+  <div class="add-hero">
+    <div class="dash-greeting">CHEFPLAN</div>
+    <h2>Добавить задачу</h2>
+  </div>
+  <div class="form-scroll">
+    <div class="form-section"><label class="form-lbl">ЗАВЕДЕНИЕ</label><div class="venue-chips" id="venue-chips"></div></div>
+    <div class="form-section"><label class="form-lbl">ЗАДАЧА</label><textarea class="form-input" id="add-task" rows="3" placeholder="Что нужно сделать?"></textarea></div>
+    <div class="form-section"><label class="form-lbl">ДАТА</label><div class="date-grid" id="date-grid"></div><input class="form-input" id="add-date-custom" type="text" placeholder="ДД.ММ.ГГГГ" style="margin-top:8px;display:none"></div>
+    <div class="form-section"><label class="form-lbl">ВРЕМЯ</label><input class="form-input" id="add-time" type="time"></div>
+    <button class="save-btn" onclick="submitTask()">СОХРАНИТЬ ЗАДАЧУ</button>
+  </div>
+</div>
+
+<!-- VENUES -->
+<div class="screen" id="screen-venues">
+  <div class="screen-header">
+    <button class="back-btn-round" onclick="goHome()">←</button>
+    <div class="screen-header-title">Заведения</div>
+    <div class="screen-header-action" onclick="addVenuePrompt()">+ Добавить</div>
+  </div>
+  <div class="venues-scroll" id="venue-list"></div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbyX6G5-0wjpwP-Ke8nyPC6ljWTag__Dn60iyaggKxJSjsSr2MdizhbXpJPVpW9FTGsfRQ/exec';
+const CHAT_ID = '5593095944';
+let venues=[], currentTask=null, currentFilter='all', selectedVenue=null, selectedDate=null, editingField=null, taskCache=[];
+const $=id=>document.getElementById(id);
+const showLoading=()=>$('loading').classList.add('show');
+const hideLoading=()=>$('loading').classList.remove('show');
+const showToast=msg=>{const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);};
+const showScreen=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0);};
+async function api(p){const r=await fetch(API+'?'+new URLSearchParams({...p,chat_id:CHAT_ID}));return r.json();}
+
+const pad=n=>String(n).padStart(2,'0');
+function todayStr(){const d=new Date();return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();}
+function dateN(n){const d=new Date(Date.now()+n*86400000);return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();}
+function fmtDate(s){if(!s)return'';const p=s.split('.');if(p.length!==3)return s;const m=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];return p[0]+' '+m[parseInt(p[1])-1]+' '+p[2];}
+function dayLbl(s){if(s===todayStr())return'Сегодня — '+fmtDate(s);if(s===dateN(1))return'Завтра — '+fmtDate(s);return fmtDate(s);}
+function greeting(){const h=new Date().getHours();return h<6?'Доброй ночи!':h<12?'Доброе утро, шеф! 🌅':h<18?'Добрый день, шеф! 👨‍🍳':'Добрый вечер, шеф! 🌙';}
+function sbadge(s){if(s&&s.includes('Выполнено'))return{c:'badge-done',l:'✅ Выполнено'};if(s&&s.includes('Напомнено'))return{c:'badge-reminded',l:'🔔 Напомнено'};return{c:'badge-planned',l:'📌 Запланировано'};}
+const COLS=['green','blue','gold','red','purple'];const CM={};let CI=0;
+function vcol(v){if(!CM[v])CM[v]=COLS[CI++%COLS.length];return CM[v];}
+const DCOLS=['#2ECC71','#3498DB','#F39C12','#E74C3C','#9B59B6'];const DCM={};let DCI=0;
+function dcol(v){if(!DCM[v])DCM[v]=DCOLS[DCI++%DCOLS.length];return DCM[v];}
+
+function goHome(){showScreen('screen-home');loadHome();}
+
+async function loadHome(){
+  const days=['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+  $('dash-title').textContent=greeting();
+  $('dash-date').textContent=days[new Date().getDay()]+', '+fmtDate(todayStr());
+  try{
+    const[t,w,v]=await Promise.all([api({action:'getTasks',filter:'today'}),api({action:'getTasks',filter:'week'}),api({action:'getVenues'})]);
+    venues=Array.isArray(v)?v:[];
+    $('s-today').textContent=Array.isArray(t)?t.length:0;
+    $('s-week').textContent=Array.isArray(w)?w.length:0;
+    $('s-venues').textContent=venues.length;
+    const upcoming=Array.isArray(w)?w.slice(0,5):[];
+    if(!upcoming.length){$('dash-tasks').innerHTML='<div style="padding:16px;color:var(--gray);font-size:13px">На эту неделю задач нет</div>';}
+    else{$('dash-tasks').innerHTML=upcoming.map((t,i)=>`
+      <div class="task-item fade-up" style="animation-delay:${i*.06}s" onclick='openFromDash(${esc(t)})'>
+        <div class="task-dot" style="background:${dcol(t.venue)}"></div>
+        <div class="task-info"><div class="task-name">${t.task}</div><div class="task-meta">🏠 ${t.venue} · ${t.date===todayStr()?'Сегодня':fmtDate(t.date)}</div></div>
+        <div class="task-time-sm">${t.time}</div>
+      </div>`).join('');}
+  }catch(e){$('dash-tasks').innerHTML='<div style="padding:16px;color:var(--gray);font-size:13px">Ошибка загрузки</div>';}
+}
+
+function esc(o){return JSON.stringify(o).replace(/'/g,"&#39;");}
+function openFromDash(t){currentFilter='all';showTaskDetail(t);}
+
+async function loadTasks(f){
+  currentFilter=f;
+  const titles={today:'На сегодня',week:'На неделю',all:'Все задачи'};
+  $('tasks-title').textContent=titles[f];
+  document.querySelectorAll('.filter-tab').forEach(t=>{
+    const lc=t.textContent.toLowerCase();
+    t.classList.toggle('active',(f==='today'&&lc.includes('сегодня'))||(f==='week'&&lc.includes('неделя'))||(f==='all'&&lc.includes('все')));
+  });
+  showScreen('screen-tasks');
+  $('task-list').innerHTML='<div class="loader"><div class="loader-dots"><span></span><span></span><span></span></div></div>';
+  try{const tasks=await api({action:'getTasks',filter:f});taskCache=Array.isArray(tasks)?tasks:[];renderTasks(taskCache);}
+  catch(e){$('task-list').innerHTML='<div class="empty-state"><div class="empty-text">Ошибка загрузки</div></div>';}
+}
+
+function setFilter(f,el){document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');loadTasks(f);}
+
+function renderTasks(tasks){
+  const l=$('task-list');
+  if(!tasks||!tasks.length){l.innerHTML=`<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Задач нет</div></div>`;return;}
+  const g={};tasks.forEach(t=>{if(!g[t.date])g[t.date]=[];g[t.date].push(t);});
+  l.innerHTML=Object.entries(g).map(([date,items],gi)=>`
+    <div class="task-group-date fade-up" style="animation-delay:${gi*.04}s;opacity:0">${dayLbl(date)}</div>
+    ${items.map(task=>{const sb=sbadge(task.status);const col=vcol(task.venue);return`
+      <div class="task-card ${col} fade-up" style="animation-delay:${gi*.04+.05}s;opacity:0" onclick='showTaskDetail(${esc(task)})'>
+        <div class="task-card-top">
+          <div><div class="task-card-name">${task.task}</div><div class="task-card-venue">🏠 ${task.venue}</div></div>
+          <div class="task-status-badge ${sb.c}">${sb.l}</div>
+        </div>
+        <div class="task-card-bottom">
+          <div class="task-time-badge">🕐 ${task.time}</div>
+          <div class="task-actions">
+            <button class="task-action-btn" style="background:rgba(52,152,219,.15)" onclick="event.stopPropagation();inlineEdit('${task.id}','task')">✏️</button>
+            <button class="task-action-btn" style="background:rgba(46,204,113,.15)" onclick="event.stopPropagation();doneById('${task.id}')">✅</button>
+            <button class="task-action-btn" style="background:rgba(231,76,60,.15)" onclick="event.stopPropagation();delById('${task.id}','${task.rowNum}')">🗑</button>
+          </div>
+        </div>
+      </div>`;}).join('')}
+  `).join('');
+}
+
+function showTaskDetail(task){
+  currentTask=task;
+  const sb=sbadge(task.status);
+  $('d-badge').className='task-status-badge '+sb.c;$('d-badge').textContent=sb.l;
+  $('d-task').textContent=task.task;$('d-venue').textContent=task.venue;
+  $('d-date').textContent=fmtDate(task.date)+' ('+task.date+')';$('d-time').textContent=task.time;
+  $('d-meta').textContent='🏠 '+task.venue+' · '+task.date+' в '+task.time;
+  $('detail-back').onclick=()=>loadTasks(currentFilter);
+  showScreen('screen-detail');
+}
+
+async function markDone(){if(!currentTask)return;showLoading();try{await api({action:'updateTask',id:currentTask.id,status:'✅ Выполнено'});hideLoading();showToast('✅ Выполнено!');loadTasks(currentFilter);}catch(e){hideLoading();showToast('Ошибка');}}
+async function doneById(id){showLoading();try{await api({action:'updateTask',id,status:'✅ Выполнено'});hideLoading();showToast('✅ Выполнено!');loadTasks(currentFilter);}catch(e){hideLoading();showToast('Ошибка');}}
+async function confirmDelete(){if(!currentTask||!confirm('Удалить задачу?'))return;showLoading();try{await api({action:'deleteTask',id:currentTask.id,row:currentTask.rowNum});hideLoading();showToast('🗑 Удалено');loadTasks(currentFilter);}catch(e){hideLoading();showToast('Ошибка');}}
+async function delById(id,row){if(!confirm('Удалить?'))return;showLoading();try{await api({action:'deleteTask',id,row});hideLoading();showToast('🗑 Удалено');loadTasks(currentFilter);}catch(e){hideLoading();showToast('Ошибка');}}
+
+function editField(f){
+  editingField=f;
+  const lbls={task:'ЗАДАЧА',venue:'ЗАВЕДЕНИЕ',date:'ДАТА (ДД.ММ.ГГГГ)',time:'ВРЕМЯ (ЧЧ:ММ)'};
+  $('modal-title').textContent=lbls[f];$('modal-input').value=currentTask[f]||'';
+  $('modal-overlay').classList.add('show');setTimeout(()=>$('modal-input').focus(),300);
+}
+function inlineEdit(id,f){const t=taskCache.find(t=>String(t.id)===String(id));if(t){currentTask=t;editField(f);}}
+function closeModal(){$('modal-overlay').classList.remove('show');}
+$('modal-overlay').addEventListener('click',e=>{if(e.target===$('modal-overlay'))closeModal();});
+
+async function saveEdit(){
+  const val=$('modal-input').value.trim();
+  if(!val){showToast('Введи значение');return;}
+  closeModal();
+  if(editingField==='__venue__'){
+    showLoading();try{await api({action:'addVenue',name:val});hideLoading();showToast('✓ Заведение добавлено');loadVenues();}catch(e){hideLoading();showToast('Ошибка');}
+    return;
+  }
+  showLoading();
+  const p={action:'updateTask',id:currentTask.id};p[editingField]=val;
+  try{await api(p);currentTask[editingField]=val;if($('screen-detail').classList.contains('active'))showTaskDetail(currentTask);hideLoading();showToast('✓ Сохранено');}
+  catch(e){hideLoading();showToast('Ошибка');}
+}
+
+async function showAddTask(){
+  showLoading();try{venues=await api({action:'getVenues'});}catch(e){venues=[];}
+  hideLoading();selectedVenue=null;selectedDate=todayStr();
+  const chips=$('venue-chips');
+  if(!venues.length){chips.innerHTML='<div style="font-size:12px;color:var(--gray)">Нет заведений. Добавь сначала.</div>';}
+  else{chips.innerHTML=venues.map(v=>`<div class="chip" onclick="pickVenue(this,'${v.name.replace(/'/g,"&#39;")}')">${v.name}</div>`).join('');
+    const fc=chips.querySelector('.chip');if(fc){fc.classList.add('active');selectedVenue=venues[0].name;}}
+  const grid=$('date-grid');
+  const dates=[{l:'Сегодня',s:todayStr(),v:todayStr()},{l:'Завтра',s:dateN(1),v:dateN(1)},{l:'Послезавтра',s:dateN(2),v:dateN(2)},{l:'Другая дата',s:'Введу сам',v:'custom'}];
+  grid.innerHTML=dates.map(d=>`<div class="date-btn${d.v===todayStr()?' active':''}" onclick="pickDate(this,'${d.v}')">${d.l}<div class="date-btn-sub">${d.s}</div></div>`).join('');
+  $('add-task').value='';$('add-time').value='';$('add-date-custom').style.display='none';$('add-date-custom').value='';
+  $('add-back').onclick=()=>loadTasks(currentFilter);
+  showScreen('screen-add');
+}
+function pickVenue(el,name){document.querySelectorAll('#venue-chips .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');selectedVenue=name;}
+function pickDate(el,val){document.querySelectorAll('#date-grid .date-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');if(val==='custom'){$('add-date-custom').style.display='block';selectedDate=null;setTimeout(()=>$('add-date-custom').focus(),100);}else{$('add-date-custom').style.display='none';selectedDate=val;}}
+
+async function submitTask(){
+  const task=$('add-task').value.trim();
+  const date=selectedDate||$('add-date-custom').value.trim();
+  const time=$('add-time').value?$('add-time').value.substring(0,5):'';
+  if(!selectedVenue){showToast('Выбери заведение');return;}
+  if(!task){showToast('Введи задачу');return;}
+  if(!date||!/^\d{2}\.\d{2}\.\d{4}$/.test(date)){showToast('Укажи дату ДД.ММ.ГГГГ');return;}
+  if(!time){showToast('Укажи время');return;}
+  showLoading();try{await api({action:'addTask',venue:selectedVenue,task,date,time});hideLoading();showToast('✓ Задача добавлена');loadTasks('all');}
+  catch(e){hideLoading();showToast('Ошибка');}
+}
+
+async function loadVenues(){
+  showScreen('screen-venues');$('venue-list').innerHTML='<div class="loader"><div class="loader-dots"><span></span><span></span><span></span></div></div>';
+  try{venues=await api({action:'getVenues'});renderVenues(venues);}
+  catch(e){$('venue-list').innerHTML='<div class="empty-state"><div class="empty-text">Ошибка</div></div>';}
+}
+function renderVenues(list){
+  const el=$('venue-list');
+  if(!list||!list.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">🏠</div><div class="empty-text">Заведений нет.<br>Добавь первое!</div></div>`;return;}
+  el.innerHTML=list.map((v,i)=>`<div class="venue-card fade-up" style="animation-delay:${i*.06}s;opacity:0"><div class="venue-icon-circle">🏠</div><div><div class="venue-name-text">${v.name}</div><div class="venue-sub">Заведение</div></div></div>`).join('');
+}
+function addVenuePrompt(){editingField='__venue__';$('modal-title').textContent='НОВОЕ ЗАВЕДЕНИЕ';$('modal-input').value='';$('modal-input').placeholder='Название заведения';$('modal-overlay').classList.add('show');setTimeout(()=>$('modal-input').focus(),300);}
+
+if(window.Telegram?.WebApp){window.Telegram.WebApp.ready();window.Telegram.WebApp.expand();}
+api({action:'setup'}).catch(()=>{});
+loadHome();
+</script>
+</body>
+</html>
