@@ -639,72 +639,25 @@ function showPage(name){
   if(name==='venues')loadVenues();
 }
 
-function showEnterIdScreen(){
-  document.body.style.cssText='margin:0;padding:0;background:#071018;font-family:Inter,sans-serif;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center';
-  document.body.innerHTML=`
-    <div style="padding:32px;text-align:center;max-width:340px;width:100%">
-      <div style="font-size:52px;margin-bottom:16px">👨‍🍳</div>
-      <div style="font-family:Syne,sans-serif;font-size:24px;font-weight:800;margin-bottom:8px">ChefPlan</div>
-      <div style="font-size:14px;color:#94A3B8;line-height:1.6;margin-bottom:28px">Введи свой Telegram ID чтобы войти.<br>Узнай его написав боту <span style="color:#22C55E">/myid</span></div>
-      <input id="uid-input" type="number" placeholder="Например: 5593095944" style="width:100%;background:#101826;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;font-size:16px;color:#fff;outline:none;margin-bottom:12px;box-sizing:border-box">
-      <button onclick="saveUid()" style="width:100%;background:#22C55E;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;color:#000;cursor:pointer">Войти →</button>
-      <div id="uid-err" style="color:#EF4444;font-size:13px;margin-top:10px;display:none">Введи корректный ID</div>
-    </div>
-  `;
-}
-
-function saveUid(){
-  const val=document.getElementById('uid-input').value.trim();
-  if(!val||val.length<5){document.getElementById('uid-err').style.display='block';return;}
-  localStorage.setItem('chef_uid',val);
-  location.reload();
-}
-
 // INIT
 async function init(){
   const tg=window.Telegram?.WebApp;
   if(tg){tg.ready();tg.expand();}
 
-  // 1. Из Telegram WebApp
-  if(tg&&tg.initDataUnsafe?.user?.id){
-    CID=String(tg.initDataUnsafe.user.id);
-    UNAME=tg.initDataUnsafe.user.username||tg.initDataUnsafe.user.first_name||"";
-  }
-  // 2. Парсим initData вручную
-  if(!CID&&tg&&tg.initData){
-    try{
-      const params=new URLSearchParams(tg.initData);
-      const ud=params.get("user");
-      if(ud){const uo=JSON.parse(decodeURIComponent(ud));if(uo&&uo.id){CID=String(uo.id);UNAME=uo.username||uo.first_name||"";}}}
-    catch(e){}
-  }
-  // 3. Из URL параметра ?uid=
-  if(!CID){
-    const up=new URLSearchParams(window.location.search);
-    const uid=up.get("uid");
-    if(uid)CID=uid;
-  }
-  // 4. Из startapp параметра Telegram
-  if(!CID&&tg&&tg.initDataUnsafe?.start_param){
-    CID=tg.initDataUnsafe.start_param;
+  // Получаем chat_id из URL параметра uid
+  const urlParams=new URLSearchParams(window.location.search);
+  CID=urlParams.get('uid')||'';
+
+  // Если нет — пробуем из Telegram
+  if(!CID&&tg){
+    const u=tg.initDataUnsafe?.user;
+    if(u&&u.id)CID=String(u.id);
   }
 
-  // 5. Из localStorage (сохранённый ранее)
-  if(!CID){
-    const saved=localStorage.getItem("chef_uid");
-    if(saved)CID=saved;
-  }
+  // Если совсем нет — используем дефолтный для разработки
+  if(!CID)CID=ADMIN_ID;
 
-  // Если всё ещё нет — показать экран ввода ID
-  if(!CID){
-    showEnterIdScreen();
-    return;
-  }
-
-  // Сохраняем ID для будущих открытий
-  localStorage.setItem("chef_uid", CID);
-
-  // Set greeting
+  // // Set greeting
   $('hero-title').innerHTML=greeting();
   const days=['вс','пн','вт','ср','чт','пт','сб'];
   const d=new Date();
