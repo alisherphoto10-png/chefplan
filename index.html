@@ -642,17 +642,35 @@ function showPage(name){
 // INIT
 async function init(){
   const tg=window.Telegram?.WebApp;
-  if(tg){
-    tg.ready();tg.expand();
-    const u=tg.initDataUnsafe?.user;
-    if(u&&u.id){CID=String(u.id);UNAME=u.username||u.first_name||"";}
-    if(!CID&&tg.initData){
-      try{const p=new URLSearchParams(tg.initData);const ud=p.get("user");if(ud){const uo=JSON.parse(decodeURIComponent(ud));if(uo.id){CID=String(uo.id);UNAME=uo.username||uo.first_name||"";}};}catch(e){}
-    }
+  if(tg){tg.ready();tg.expand();}
+
+  // 1. Из Telegram WebApp
+  if(tg&&tg.initDataUnsafe?.user?.id){
+    CID=String(tg.initDataUnsafe.user.id);
+    UNAME=tg.initDataUnsafe.user.username||tg.initDataUnsafe.user.first_name||"";
   }
-  if(!CID){const up=new URLSearchParams(window.location.search);const uid=up.get("uid");if(uid)CID=uid;}
+  // 2. Парсим initData вручную
+  if(!CID&&tg&&tg.initData){
+    try{
+      const params=new URLSearchParams(tg.initData);
+      const ud=params.get("user");
+      if(ud){const uo=JSON.parse(decodeURIComponent(ud));if(uo&&uo.id){CID=String(uo.id);UNAME=uo.username||uo.first_name||"";}}}
+    catch(e){}
+  }
+  // 3. Из URL параметра ?uid=
   if(!CID){
-    document.body.innerHTML="<div style='display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;text-align:center;background:#071018;color:#fff'><div style='font-size:56px;margin-bottom:20px'>🤖</div><div style='font-size:22px;font-weight:700;margin-bottom:12px'>Открой через Telegram</div><div style='font-size:15px;color:#94A3B8'>Найди @ChefPlan_testbot и нажми кнопку в сообщении</div></div>";
+    const up=new URLSearchParams(window.location.search);
+    const uid=up.get("uid");
+    if(uid)CID=uid;
+  }
+  // 4. Из startapp параметра Telegram
+  if(!CID&&tg&&tg.initDataUnsafe?.start_param){
+    CID=tg.initDataUnsafe.start_param;
+  }
+
+  // Если всё ещё нет — показать инструкцию
+  if(!CID){
+    document.body.innerHTML="<div style='display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;text-align:center;background:#071018;color:#fff;font-family:Inter,sans-serif'><div style='font-size:56px;margin-bottom:20px'>🤖</div><div style='font-size:22px;font-weight:700;margin-bottom:12px'>Открой через Telegram</div><div style='font-size:15px;color:#94A3B8;line-height:1.7'>Найди <span style='color:#22C55E'>@ChefPlan_testbot</span><br>и нажми кнопку <b>📋 Открыть ChefPlan</b><br>в сообщении от бота</div></div>";
     return;
   }
 
