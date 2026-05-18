@@ -643,7 +643,11 @@ function showPage(name){
 async function init(){
   const tg=window.Telegram?.WebApp;
   if(tg){tg.ready();tg.expand();const u=tg.initDataUnsafe?.user;if(u){CID=String(u.id);UNAME=u.username||u.first_name||'';}}
-  if(!CID)CID=ADMIN_ID;
+  // Если не открыто через Telegram — показать ошибку
+  if(!CID){
+    document.body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;text-align:center;background:#071018;color:#fff;font-family:Inter,sans-serif"><div style="font-size:56px;margin-bottom:20px">🤖</div><div style="font-size:22px;font-weight:700;margin-bottom:12px">Открой через Telegram</div><div style="font-size:15px;color:#94A3B8;line-height:1.7">Найди @ChefPlan_testbot и нажми Открыть ChefPlan</div></div>`;
+    return;
+  }
 
   // Set greeting
   $('hero-title').innerHTML=greeting();
