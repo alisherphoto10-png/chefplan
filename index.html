@@ -577,6 +577,9 @@ textarea.input{resize:none;line-height:1.5}
 
 <script>
 const API='https://chefplan.ru/api';
+  const tg = window.Telegram?.WebApp;
+const chat_id = tg?.initDataUnsafe?.user?.id || new URLSearchParams(window.location.search).get('uid') || null;
+if(tg) tg.expand();
 const ADMIN_ID='5593095944';
 const BOT_TOKEN='8790843148:AAGlhWphIn5JrC0WL9WVkbwv7-ZtGOkD6oo';
 
