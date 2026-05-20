@@ -113,6 +113,16 @@ app.get('/api/venues', async (req, res) => {
 
 app.post('/api/venues', async (req, res) => {
   const { chat_id, name } = req.query;
+  app.delete('/api/users', async (req, res) => {
+  const { id } = req.query;
+  if (!id) return res.json({ error: 'No id' });
+  try {
+    await pool.query('DELETE FROM tasks WHERE user_id=$1', [id]);
+    await pool.query('DELETE FROM venues WHERE user_id=$1', [id]);
+    await pool.query('DELETE FROM users WHERE id=$1', [id]);
+    res.json({ success: true });
+  } catch(e) { res.json({ error: e.message }); }
+});
   if (!chat_id || !name) return res.json({ error: 'Missing params' });
   try {
     await pool.query('INSERT INTO venues (user_id, name) VALUES ($1,$2)', [chat_id, name]);
