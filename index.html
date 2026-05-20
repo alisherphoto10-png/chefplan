@@ -9,7 +9,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#071018;--card:#101826;--card-hover:#162235;
-  --green:#22C55E;--green-dim:rgba(34,197,94,.12);--green-glow:rgba(34,197,94,.25);
+  --green:#22C55E;--green-dim:rgba(34,197,94,.12);
   --blue:#3B82F6;--blue-dim:rgba(59,130,246,.12);
   --orange:#F59E0B;--orange-dim:rgba(245,158,11,.12);
   --red:#EF4444;--red-dim:rgba(239,68,68,.12);
@@ -43,7 +43,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card-hover);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:var(--r-chip);font-size:13px;font-weight:500;z-index:600;white-space:nowrap;opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .display{font-family:'Syne',sans-serif;font-weight:800}
-.card{background:var(--card);border-radius:var(--r-card);border:1px solid var(--border);overflow:hidden}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:var(--r-chip);font-size:11px;font-weight:600}
 .badge-green{background:var(--green-dim);color:var(--green)}
 .badge-blue{background:var(--blue-dim);color:var(--blue)}
@@ -74,7 +73,6 @@ textarea.input{resize:none;line-height:1.5}
 .hero-greeting{font-size:12px;color:var(--text2);margin-bottom:4px;display:flex;align-items:center;gap:6px}
 .hero-status{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);display:inline-block}
 .hero-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1.1;margin-bottom:4px}
-.hero-sub{font-size:14px;color:var(--text2)}
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px 16px}
 .stat-card{background:var(--card);border-radius:var(--r-card);padding:16px;border:1px solid var(--border);position:relative;overflow:hidden}
 .stat-card::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;opacity:.15}
@@ -84,11 +82,7 @@ textarea.input{resize:none;line-height:1.5}
 .stat-icon{position:absolute;top:14px;right:14px;font-size:18px;opacity:.6}
 .task-item{background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:8px;border:1px solid var(--border);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden}
 .task-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 3px 3px 0}
-.task-item.green::before{background:var(--green);box-shadow:2px 0 8px rgba(34,197,94,.4)}
-.task-item.blue::before{background:var(--blue);box-shadow:2px 0 8px rgba(59,130,246,.4)}
-.task-item.orange::before{background:var(--orange);box-shadow:2px 0 8px rgba(245,158,11,.4)}
-.task-item.red::before{background:var(--red);box-shadow:2px 0 8px rgba(239,68,68,.4)}
-.task-item.purple::before{background:#A855F7;box-shadow:2px 0 8px rgba(168,85,247,.4)}
+.task-item.green::before{background:var(--green)}.task-item.blue::before{background:var(--blue)}.task-item.orange::before{background:var(--orange)}.task-item.red::before{background:var(--red)}.task-item.purple::before{background:#A855F7}
 .task-item:active{border-color:var(--border2);transform:scale(.99)}
 .ti-left{flex:1;min-width:0}
 .ti-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
@@ -109,16 +103,95 @@ textarea.input{resize:none;line-height:1.5}
 .filter-row::-webkit-scrollbar{display:none}
 .filter-tab{padding:7px 18px;border-radius:var(--r-chip);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text2);white-space:nowrap;transition:all .15s;flex-shrink:0}
 .filter-tab.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
-.week-cal{padding:16px;overflow-x:auto}
+
+/* WEEK CALENDAR - FIXED */
+.week-cal{padding:12px 16px;overflow-x:auto;flex-shrink:0}
 .week-cal::-webkit-scrollbar{display:none}
-.week-days{display:flex;gap:8px;min-width:max-content}
-.wday{width:48px;height:72px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;border:1px solid var(--border);background:var(--card);transition:all .2s;flex-shrink:0}
+.week-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;width:100%}
+.wday{height:70px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:1px solid var(--border);background:var(--card);transition:all .2s;position:relative}
 .wday.active{background:var(--green);border-color:var(--green);box-shadow:0 4px 16px rgba(34,197,94,.3)}
 .wday.active .wd-name,.wday.active .wd-num{color:#000}
-.wday.has-tasks::after{content:'';display:block;width:4px;height:4px;border-radius:50%;background:var(--green);margin-top:2px}
+.wday.has-tasks::after{content:'';position:absolute;bottom:7px;width:4px;height:4px;border-radius:50%;background:var(--green)}
 .wday.active.has-tasks::after{background:#000}
-.wd-name{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
-.wd-num{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text)}
+.wd-name{font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.wd-num{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--text)}
+
+/* VENUES */
+.venue-card{background:var(--card);border-radius:var(--r-card);padding:16px;border:1px solid var(--border);margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s}
+.venue-card:active{border-color:var(--border2);transform:scale(.99)}
+.vc-icon{width:48px;height:48px;border-radius:16px;background:var(--green-dim);border:1px solid rgba(34,197,94,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--green)}
+.vc-icon svg{width:22px;height:22px}
+.vc-info{flex:1}
+.vc-name{font-size:15px;font-weight:600;margin-bottom:3px}
+.vc-sub{font-size:12px;color:var(--text2)}
+.vc-actions{display:flex;gap:6px;flex-shrink:0}
+.vc-btn{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:transform .1s}
+.vc-btn:active{transform:scale(.9)}
+.vc-btn-edit{background:var(--blue-dim);color:var(--blue)}
+.vc-btn-del{background:var(--red-dim);color:var(--red)}
+.vc-btn svg{width:14px;height:14px}
+
+/* VENUE PAGE */
+.venue-page{position:fixed;inset:0;background:var(--bg);z-index:150;display:none;flex-direction:column}
+.venue-page.show{display:flex}
+.venue-page-header{padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.venue-page-hero{padding:16px;background:linear-gradient(180deg,rgba(34,197,94,.05),transparent);flex-shrink:0}
+.venue-page-icon{width:52px;height:52px;border-radius:18px;background:var(--green-dim);border:1px solid rgba(34,197,94,.2);display:flex;align-items:center;justify-content:center;margin-bottom:10px;color:var(--green)}
+.venue-page-icon svg{width:26px;height:26px}
+.venue-page-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px}
+.venue-page-sub{font-size:13px;color:var(--text2);margin-bottom:12px}
+.venue-page-btns{display:flex;gap:8px}
+.vpbtn{flex:1;padding:10px;border-radius:12px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.vpbtn svg{width:13px;height:13px}
+.vpbtn:active{transform:scale(.97)}
+.vpbtn-edit{background:var(--blue-dim);color:var(--blue)}
+.vpbtn-del{background:var(--red-dim);color:var(--red)}
+.venue-page-tasks{flex:1;overflow-y:auto;padding:0 16px 16px}
+.venue-page-tasks::-webkit-scrollbar{display:none}
+
+/* PROFILE */
+.profile-blur{position:absolute;inset:0;background:rgba(7,16,24,.6);backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:center;z-index:10}
+.coming-card{background:rgba(16,24,38,.8);border:1px solid var(--border2);border-radius:24px;padding:40px 32px;text-align:center;max-width:280px;animation:scaleIn .3s ease}
+.coming-icon{font-size:48px;margin-bottom:16px}
+.coming-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px}
+.coming-desc{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* NO VENUES */
+.nv-wrapper{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.nv-icon{font-size:72px;margin-bottom:20px}
+.nv-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:12px}
+.nv-desc{font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:32px;max-width:300px}
+
+/* SHEET */
+.sheet-overlay{position:fixed;inset:0;background:rgba(7,16,24,.7);backdrop-filter:blur(8px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
+.sheet-overlay.show{opacity:1;pointer-events:all}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-radius:24px 24px 0 0;padding:0 0 40px;max-height:85vh;overflow-y:auto;z-index:201;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.1,.64,1)}
+.sheet-overlay.show .sheet{transform:translateY(0)}
+.sheet::-webkit-scrollbar{display:none}
+.sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 20px}
+.sheet-header{padding:0 20px 16px;border-bottom:1px solid var(--border)}
+.sheet-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;line-height:1.2;margin-bottom:8px;margin-top:8px}
+.sheet-meta{font-size:13px;color:var(--text2)}
+.sheet-fields{padding:16px 20px}
+.sf-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.sf-row:last-child{border-bottom:none}
+.sf-icon{font-size:16px;width:24px;text-align:center;flex-shrink:0}
+.sf-content{flex:1}
+.sf-label{font-size:10px;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
+.sf-val{font-size:14px;font-weight:500}
+.sf-edit{color:var(--text3);cursor:pointer;font-size:15px;padding:4px}
+.sheet-actions{padding:16px 20px 0;display:flex;flex-direction:column;gap:10px}
+.sheet-action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(7,16,24,.8);backdrop-filter:blur(8px);z-index:300;opacity:0;pointer-events:none;transition:opacity .25s;display:flex;align-items:flex-end}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1);border:1px solid var(--border2)}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+
+/* ADD TASK */
 .add-header{padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
 .add-scroll{flex:1;overflow-y:auto;padding:20px 16px 32px}
 .add-scroll::-webkit-scrollbar{display:none}
@@ -131,47 +204,8 @@ textarea.input{resize:none;line-height:1.5}
 .prio-btn.high.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
 .prio-btn.mid.active{background:var(--orange-dim);border-color:var(--orange);color:var(--orange)}
 .prio-btn.low.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
-.venue-card{background:var(--card);border-radius:var(--r-card);padding:16px;border:1px solid var(--border);margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s}
-.venue-card:active{border-color:var(--border2);transform:scale(.99)}
-.vc-icon{width:48px;height:48px;border-radius:16px;background:var(--green-dim);border:1px solid rgba(34,197,94,.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.vc-info{flex:1}
-.vc-name{font-size:15px;font-weight:600;margin-bottom:3px}
-.vc-sub{font-size:12px;color:var(--text2)}
-.vc-arrow{color:var(--text3);font-size:16px}
-.profile-blur{position:absolute;inset:0;background:rgba(7,16,24,.6);backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:center;z-index:10}
-.coming-card{background:rgba(16,24,38,.8);border:1px solid var(--border2);border-radius:24px;padding:40px 32px;text-align:center;max-width:280px;animation:scaleIn .3s ease}
-.coming-icon{font-size:48px;margin-bottom:16px}
-.coming-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px}
-.coming-desc{font-size:14px;color:var(--text2);line-height:1.6}
-.nv-wrapper{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
-.nv-icon{font-size:72px;margin-bottom:20px}
-.nv-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:12px}
-.nv-desc{font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:32px;max-width:300px}
-.sheet-overlay{position:fixed;inset:0;background:rgba(7,16,24,.7);backdrop-filter:blur(8px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}
-.sheet-overlay.show{opacity:1;pointer-events:all}
-.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-radius:24px 24px 0 0;padding:0 0 40px;max-height:85vh;overflow-y:auto;z-index:201;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.1,.64,1)}
-.sheet-overlay.show .sheet{transform:translateY(0)}
-.sheet::-webkit-scrollbar{display:none}
-.sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 20px}
-.sheet-header{padding:0 20px 16px;border-bottom:1px solid var(--border)}
-.sheet-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;line-height:1.2;margin-bottom:8px}
-.sheet-meta{font-size:13px;color:var(--text2)}
-.sheet-fields{padding:16px 20px}
-.sf-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-.sf-row:last-child{border-bottom:none}
-.sf-icon{font-size:16px;width:24px;text-align:center;flex-shrink:0}
-.sf-content{flex:1}
-.sf-label{font-size:10px;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
-.sf-val{font-size:14px;font-weight:500}
-.sf-edit{color:var(--text3);cursor:pointer;font-size:15px;padding:4px}
-.sheet-actions{padding:16px 20px 0;display:flex;flex-direction:column;gap:10px}
-.sheet-action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.modal-overlay{position:fixed;inset:0;background:rgba(7,16,24,.8);backdrop-filter:blur(8px);z-index:300;opacity:0;pointer-events:none;transition:opacity .25s;display:flex;align-items:flex-end}
-.modal-overlay.show{opacity:1;pointer-events:all}
-.modal{background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;transform:translateY(100%);transition:transform .3s cubic-bezier(.34,1.2,.64,1);border:1px solid var(--border2)}
-.modal-overlay.show .modal{transform:translateY(0)}
-.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px}
-.modal-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+
+/* ADMIN */
 .admin-page{position:fixed;inset:0;background:var(--bg);z-index:150;display:none;flex-direction:column}
 .admin-page.show{display:flex}
 .admin-header{padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
@@ -179,14 +213,25 @@ textarea.input{resize:none;line-height:1.5}
 .admin-scroll{flex:1;overflow-y:auto;padding:16px}
 .admin-scroll::-webkit-scrollbar{display:none}
 .admin-card{background:var(--card);border-radius:var(--r-card);border:1px solid var(--border);padding:16px;margin-bottom:12px}
-.admin-card-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
+.admin-card-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .broadcast-preview{background:var(--bg);border-radius:16px;padding:14px;margin:12px 0;border:1px solid var(--border);font-size:13px;color:var(--text2);min-height:48px}
+.photo-zone{border:1px dashed var(--border2);border-radius:12px;padding:16px;text-align:center;cursor:pointer;position:relative;margin-bottom:10px;transition:all .2s}
+.photo-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.photo-zone-text{font-size:13px;color:var(--text2)}
+.photo-thumb{width:100%;border-radius:12px;margin-bottom:10px;display:none;max-height:180px;object-fit:cover}
 .user-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
 .user-row:last-child{border-bottom:none}
 .user-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#6366F1);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .user-info{flex:1}
 .user-name{font-size:13px;font-weight:600}
 .user-date{font-size:11px;color:var(--text2);margin-top:2px}
+.user-actions{display:flex;gap:6px}
+.user-btn{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;transition:transform .1s}
+.user-btn:active{transform:scale(.9)}
+.user-btn svg{width:13px;height:13px}
+.user-btn-edit{background:var(--blue-dim);color:var(--blue)}
+.user-btn-del{background:var(--red-dim);color:var(--red)}
+
 .empty-state{text-align:center;padding:60px 20px;color:var(--text2)}
 .empty-icon{font-size:52px;margin-bottom:14px;opacity:.6}
 .empty-text{font-size:15px;line-height:1.5}
@@ -197,7 +242,7 @@ textarea.input{resize:none;line-height:1.5}
 <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
 <div class="toast" id="toast"></div>
 
-<!-- EDIT MODAL -->
+<!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -213,7 +258,7 @@ textarea.input{resize:none;line-height:1.5}
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <div style="margin-bottom:8px"><span class="badge" id="sheet-badge"></span></div>
+      <div><span class="badge" id="sheet-badge"></span></div>
       <div class="sheet-title" id="sheet-title"></div>
       <div class="sheet-meta" id="sheet-meta"></div>
     </div>
@@ -232,6 +277,38 @@ textarea.input{resize:none;line-height:1.5}
   </div>
 </div>
 
+<!-- VENUE PAGE -->
+<div class="venue-page" id="venue-page">
+  <div class="venue-page-header">
+    <button class="icon-btn" onclick="closeVenuePage()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div style="flex:1"><div class="page-title" style="font-size:18px">Заведение</div></div>
+    <button class="icon-btn" onclick="addTaskFromVenue()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+  <div class="venue-page-hero">
+    <div class="venue-page-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="22" x2="15" y2="12"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+    </div>
+    <div class="venue-page-name" id="vp-name">—</div>
+    <div class="venue-page-sub" id="vp-sub">—</div>
+    <div class="venue-page-btns">
+      <button class="vpbtn vpbtn-edit" onclick="editCurrentVenue()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Переименовать
+      </button>
+      <button class="vpbtn vpbtn-del" onclick="deleteCurrentVenue()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        Удалить
+      </button>
+    </div>
+  </div>
+  <div style="padding:8px 16px 4px;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;flex-shrink:0">Задачи заведения</div>
+  <div class="venue-page-tasks" id="vp-tasks"></div>
+</div>
+
 <!-- ADMIN -->
 <div class="admin-page" id="admin-page">
   <div class="admin-header">
@@ -244,9 +321,14 @@ textarea.input{resize:none;line-height:1.5}
       <div class="admin-card-title">📢 Рассылка</div>
       <label class="label">Текст сообщения</label>
       <textarea class="input" id="bc-text" rows="4" placeholder="Текст для всех пользователей..." style="margin-bottom:12px" oninput="updatePreview()"></textarea>
+      <div class="photo-zone" id="photo-zone">
+        <div class="photo-zone-text">📎 Прикрепить фото (необязательно)</div>
+        <input type="file" accept="image/*" onchange="onPhoto(this)">
+      </div>
+      <img id="photo-thumb" class="photo-thumb">
       <label class="label">Предпросмотр</label>
       <div class="broadcast-preview" id="bc-preview">Начни вводить текст...</div>
-      <button class="btn" style="background:linear-gradient(135deg,#D97706,#F59E0B);color:#000;width:100%;padding:14px;margin-top:8px;font-size:15px;border-radius:var(--r-btn)" onclick="sendBroadcast()">📢 Отправить всем</button>
+      <button class="btn" style="background:linear-gradient(135deg,#D97706,#F59E0B);color:#000;width:100%;padding:14px;margin-top:4px;font-size:15px;border-radius:var(--r-btn)" onclick="sendBroadcast()">📢 Отправить всем</button>
     </div>
     <div class="admin-card">
       <div class="admin-card-title">👥 Пользователи</div>
@@ -264,7 +346,7 @@ textarea.input{resize:none;line-height:1.5}
       <div class="home-hero anim-up">
         <div class="hero-greeting"><span class="hero-status"></span><span id="hero-date">—</span></div>
         <div class="hero-title" id="hero-title">Добрый день,<br>шеф 👨‍🍳</div>
-        <div class="hero-sub">Кухня под контролем</div>
+        <div class="hero-sub" id="hero-sub">Кухня под контролем</div>
       </div>
       <div class="stats-grid">
         <div class="stat-card green anim-up stagger-1"><div class="stat-icon">📋</div><div class="stat-val" id="stat-today" style="color:var(--green)">—</div><div class="stat-lbl">Задач сегодня</div></div>
@@ -298,7 +380,9 @@ textarea.input{resize:none;line-height:1.5}
     <!-- WEEK -->
     <div class="page" id="page-week">
       <div class="page-header"><div class="page-title display">Неделя</div></div>
-      <div class="week-cal"><div class="week-days" id="week-days"></div></div>
+      <div class="week-cal">
+        <div class="week-days" id="week-days"></div>
+      </div>
       <div style="padding:0 16px;flex:1" id="week-tasks"></div>
     </div>
 
@@ -315,14 +399,14 @@ textarea.input{resize:none;line-height:1.5}
     <div class="page" id="page-profile" style="position:relative;overflow:hidden">
       <div style="padding:40px 16px;opacity:.2">
         <div class="page-title display" style="font-size:32px;margin-bottom:40px">Профиль</div>
-        <div class="card" style="height:200px;margin-bottom:16px"></div>
-        <div class="card" style="height:120px"></div>
+        <div style="background:var(--card);border-radius:var(--r-card);height:200px;margin-bottom:16px"></div>
+        <div style="background:var(--card);border-radius:var(--r-card);height:120px"></div>
       </div>
       <div class="profile-blur">
         <div class="coming-card">
           <div class="coming-icon">🚀</div>
           <div class="coming-title">Скоро</div>
-          <div class="coming-desc">Мы работаем над этим разделом. Здесь появится твой профиль и статистика.</div>
+          <div class="coming-desc">Здесь появится твой профиль и статистика.</div>
         </div>
       </div>
     </div>
@@ -374,7 +458,8 @@ const BOT_TOKEN = '8790843148:AAGlhWphIn5JrC0WL9WVkbwv7-ZtGOkD6oo';
 
 let CID = null, venues = [], taskCache = [], currentTask = null, currentFilter = 'all';
 let selVenue = null, selDate = null, selPrio = 'mid', editF = null;
-let selectedWeekDay = null;
+let selectedWeekDay = null, currentVenue = null;
+let pb64 = null, pmime = null;
 
 const $ = id => document.getElementById(id);
 const showL = () => $('loading').classList.add('show');
@@ -385,88 +470,77 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ═══ API CALLS — REST формат для Node.js ═══
 async function apiGet(endpoint, params = {}) {
   const url = new URL(API + endpoint);
   url.searchParams.set('chat_id', CID);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
   const r = await fetch(url.toString());
   return r.json();
 }
-
 async function apiPost(endpoint, params = {}) {
   const url = new URL(API + endpoint);
   url.searchParams.set('chat_id', CID);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
   const r = await fetch(url.toString(), { method: 'POST' });
   return r.json();
 }
-
 async function apiPut(endpoint, params = {}) {
   const url = new URL(API + endpoint);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
   const r = await fetch(url.toString(), { method: 'PUT' });
   return r.json();
 }
-
 async function apiDelete(endpoint, params = {}) {
   const url = new URL(API + endpoint);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
   const r = await fetch(url.toString(), { method: 'DELETE' });
   return r.json();
 }
 
-// DATES
 const pad = n => String(n).padStart(2, '0');
-function todayStr() { const d = new Date(); return pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + d.getFullYear(); }
-function dateN(n) { const d = new Date(Date.now() + n * 86400000); return pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + d.getFullYear(); }
-function fmtDate(s) { if (!s) return ''; const p = s.split('.'); if (p.length !== 3) return s; const m = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек']; return p[0] + ' ' + m[parseInt(p[1]) - 1] + ' ' + p[2]; }
-function greeting() { const h = new Date().getHours(); return h < 6 ? 'Доброй ночи,<br>шеф 🌙' : h < 12 ? 'Доброе утро,<br>шеф 🌅' : h < 18 ? 'Добрый день,<br>шеф 👨‍🍳' : 'Добрый вечер,<br>шеф 🌙'; }
+function todayStr() { const d = new Date(); return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear(); }
+function dateN(n) { const d = new Date(Date.now()+n*86400000); return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear(); }
+function fmtDate(s) { if(!s) return ''; const p=s.split('.'); if(p.length!==3) return s; const m=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек']; return p[0]+' '+m[parseInt(p[1])-1]+' '+p[2]; }
+function greeting() { const h=new Date().getHours(); return h<6?'Доброй ночи,<br>шеф 🌙':h<12?'Доброе утро,<br>шеф 🌅':h<18?'Добрый день,<br>шеф 👨‍🍳':'Добрый вечер,<br>шеф 🌙'; }
 
 const VCOLS = ['green','blue','orange','red','purple'];
 const VCM = {}; let VCI = 0;
-function vcol(v) { if (!VCM[v]) VCM[v] = VCOLS[VCI++ % VCOLS.length]; return VCM[v]; }
+function vcol(v) { if(!VCM[v]) VCM[v]=VCOLS[VCI++%VCOLS.length]; return VCM[v]; }
+function esc(o) { return JSON.stringify(o).replace(/'/g,"&#39;"); }
 
-function esc(o) { return JSON.stringify(o).replace(/'/g, "&#39;"); }
-
-// PAGES
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const p = $('page-' + name);
-  if (p) { p.classList.add('active'); p.scrollTop = 0; }
-  const n = document.querySelector(`[data-page="${name}"]`);
-  if (n) n.classList.add('active');
-  if (name === 'home') loadHome();
-  if (name === 'tasks') loadTasks(currentFilter);
-  if (name === 'week') loadWeek();
-  if (name === 'venues') loadVenues();
+  const p = $('page-'+name); if(p) { p.classList.add('active'); p.scrollTop=0; }
+  const n = document.querySelector(`[data-page="${name}"]`); if(n) n.classList.add('active');
+  if(name==='home') loadHome();
+  if(name==='tasks') loadTasks(currentFilter);
+  if(name==='week') loadWeek();
+  if(name==='venues') loadVenues();
 }
 
-// INIT
 async function init() {
   const tg = window.Telegram?.WebApp;
-  if (tg) { tg.ready(); tg.expand(); }
-
-  // Получаем chat_id
+  if(tg) { tg.ready(); tg.expand(); }
   const urlParams = new URLSearchParams(window.location.search);
   CID = urlParams.get('uid') || '';
-  if (!CID && tg) {
-    const u = tg.initDataUnsafe?.user;
-    if (u && u.id) CID = String(u.id);
+  if(!CID && tg) { const u=tg.initDataUnsafe?.user; if(u&&u.id) CID=String(u.id); }
+
+  // Если нет CID — показываем ошибку
+  if(!CID) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#fff;background:#071018;text-align:center;padding:24px"><div><div style="font-size:48px;margin-bottom:16px">⚠️</div><div style="font-size:18px;font-weight:600;margin-bottom:8px">Открой через бота</div><div style="font-size:14px;color:#94A3B8">Нажми /start в @ChefPlan_testbot</div></div></div>';
+    return;
   }
-  if (!CID) CID = ADMIN_ID;
 
   $('hero-title').innerHTML = greeting();
   const days = ['вс','пн','вт','ср','чт','пт','сб'];
   const d = new Date();
-  $('hero-date').textContent = days[d.getDay()] + ', ' + fmtDate(todayStr());
+  $('hero-date').textContent = days[d.getDay()]+', '+fmtDate(todayStr());
 
-  // Admin button
-  if (CID === ADMIN_ID) {
+  if(CID === ADMIN_ID) {
     const ab = document.createElement('div');
     ab.style.cssText = 'position:absolute;top:20px;right:16px;z-index:20;cursor:pointer';
-    ab.innerHTML = '<div class="admin-badge" style="cursor:pointer" onclick="openAdmin()">⚙️ ADMIN</div>';
+    ab.innerHTML = '<div style="background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:999px;padding:3px 10px;font-size:10px;font-weight:700;color:#F59E0B;cursor:pointer" onclick="openAdmin()">⚙️ ADMIN</div>';
     $('page-profile').appendChild(ab);
   }
 
@@ -474,12 +548,11 @@ async function init() {
   loadHome();
 }
 
-// HOME
 async function loadHome() {
   try {
     const [today, week, venList] = await Promise.all([
-      apiGet('/tasks', { filter: 'today' }),
-      apiGet('/tasks', { filter: 'week' }),
+      apiGet('/tasks', {filter:'today'}),
+      apiGet('/tasks', {filter:'week'}),
       apiGet('/venues')
     ]);
     venues = Array.isArray(venList) ? venList : [];
@@ -488,25 +561,24 @@ async function loadHome() {
     $('stat-today').textContent = td.length;
     $('stat-week').textContent = wk.length;
     $('stat-venues').textContent = venues.length;
-    const done = td.filter(t => t.status && t.status.includes('done')).length;
-    $('stat-progress').textContent = td.length ? Math.round(done / td.length * 100) + '%' : '—%';
+    const done = td.filter(t => t.status==='done').length;
+    $('stat-progress').textContent = td.length ? Math.round(done/td.length*100)+'%' : '—%';
     const upcoming = wk.slice(0, 4);
     $('home-tasks').innerHTML = upcoming.length
-      ? upcoming.map((t, i) => renderTaskItem(t, i)).join('')
+      ? upcoming.map((t,i) => renderTaskItem(t,i)).join('')
       : '<div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-text">На эту неделю задач нет</div></div>';
   } catch(e) {
     $('home-tasks').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Ошибка загрузки</div></div>';
   }
 }
 
-// TASK ITEM
-function renderTaskItem(task, i = 0) {
+function renderTaskItem(task, i=0) {
   const col = vcol(task.venue);
   const isToday = task.date === todayStr();
-  return `<div class="task-item ${col} anim-up" style="animation-delay:${i * .06}s" onclick='openDetail(${esc(task)})'>
+  return `<div class="task-item ${col} anim-up" style="animation-delay:${i*.06}s" onclick='openDetail(${esc(task)})'>
     <div class="ti-left">
       <div class="ti-name">${task.task}</div>
-      <div class="ti-meta"><span>🏠 ${task.venue}</span><span class="ti-dot"></span><span>${isToday ? 'Сегодня' : fmtDate(task.date)}</span></div>
+      <div class="ti-meta"><span>🏠 ${task.venue}</span><span class="ti-dot"></span><span>${isToday?'Сегодня':fmtDate(task.date)}</span></div>
     </div>
     <div class="ti-right">
       <div class="ti-time">${task.time}</div>
@@ -519,12 +591,11 @@ function renderTaskItem(task, i = 0) {
   </div>`;
 }
 
-// TASKS
 async function loadTasks(f) {
   currentFilter = f;
   $('tasks-list').innerHTML = '<div class="skel" style="height:64px;margin-bottom:8px"></div><div class="skel" style="height:64px;opacity:.6"></div>';
   try {
-    const t = await apiGet('/tasks', { filter: f });
+    const t = await apiGet('/tasks', {filter:f});
     taskCache = Array.isArray(t) ? t : [];
     renderTasks();
   } catch(e) {
@@ -540,172 +611,199 @@ function setFilter(f, el) {
 
 function renderTasks() {
   const l = $('tasks-list');
-  if (!taskCache.length) { l.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Задач нет</div></div>'; return; }
+  if(!taskCache.length) { l.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Задач нет</div></div>'; return; }
   const g = {};
-  taskCache.forEach(t => { if (!g[t.date]) g[t.date] = []; g[t.date].push(t); });
-  l.innerHTML = Object.entries(g).map(([date, items], gi) =>
-    `<div class="date-group-label">${date === todayStr() ? 'Сегодня' : fmtDate(date)}</div>` +
-    items.map((t, i) => renderTaskItem(t, gi * .04 + i * .06)).join('')
+  taskCache.forEach(t => { if(!g[t.date]) g[t.date]=[]; g[t.date].push(t); });
+  l.innerHTML = Object.entries(g).map(([date,items],gi) =>
+    `<div class="date-group-label">${date===todayStr()?'Сегодня':fmtDate(date)}</div>` +
+    items.map((t,i) => renderTaskItem(t, gi*.04+i*.06)).join('')
   ).join('');
 }
 
-// WEEK
 async function loadWeek() {
   const days = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
   const d = new Date(); const dow = d.getDay();
-  const weekDates = Array.from({ length: 7 }, (_, i) => {
-    const offset = i - dow;
-    const dd = new Date(d.getTime() + offset * 86400000);
-    return { date: pad(dd.getDate()) + '.' + pad(dd.getMonth() + 1) + '.' + dd.getFullYear(), day: days[dd.getDay()], num: dd.getDate() };
+  const weekDates = Array.from({length:7}, (_,i) => {
+    const offset = i-dow;
+    const dd = new Date(d.getTime()+offset*86400000);
+    return { date: pad(dd.getDate())+'.'+pad(dd.getMonth()+1)+'.'+dd.getFullYear(), day: days[dd.getDay()], num: dd.getDate() };
   });
-  if (!selectedWeekDay) selectedWeekDay = todayStr();
+  if(!selectedWeekDay) selectedWeekDay = todayStr();
   try {
-    const t = await apiGet('/tasks', { filter: 'week' });
+    const t = await apiGet('/tasks', {filter:'week'});
     const allTasks = Array.isArray(t) ? t : [];
     const tasksByDate = {};
-    allTasks.forEach(t => { if (!tasksByDate[t.date]) tasksByDate[t.date] = []; tasksByDate[t.date].push(t); });
+    allTasks.forEach(t => { if(!tasksByDate[t.date]) tasksByDate[t.date]=[]; tasksByDate[t.date].push(t); });
     $('week-days').innerHTML = weekDates.map(w =>
-      `<div class="wday${w.date === selectedWeekDay ? ' active' : ''}${tasksByDate[w.date] ? ' has-tasks' : ''}" onclick="selectWeekDay('${w.date}')">
+      `<div class="wday${w.date===selectedWeekDay?' active':''}${tasksByDate[w.date]?' has-tasks':''}" onclick="selectWeekDay('${w.date}')">
         <div class="wd-name">${w.day}</div><div class="wd-num">${w.num}</div>
       </div>`
     ).join('');
-    renderWeekTasks(tasksByDate[selectedWeekDay] || []);
+    renderWeekTasks(tasksByDate[selectedWeekDay]||[]);
   } catch(e) {}
 }
 
-function selectWeekDay(date) { selectedWeekDay = date; loadWeek(); }
+function selectWeekDay(date) { selectedWeekDay=date; loadWeek(); }
 function renderWeekTasks(tasks) {
   const l = $('week-tasks');
-  if (!tasks.length) { l.innerHTML = '<div class="empty-state" style="padding:40px 20px"><div class="empty-icon">📭</div><div class="empty-text">В этот день задач нет</div></div>'; return; }
-  l.innerHTML = '<div style="padding:8px 0">' + tasks.map((t, i) => renderTaskItem(t, i)).join('') + '</div>';
+  if(!tasks.length) { l.innerHTML='<div class="empty-state" style="padding:40px 20px"><div class="empty-icon">📭</div><div class="empty-text">В этот день задач нет</div></div>'; return; }
+  l.innerHTML = '<div style="padding:8px 0">'+tasks.map((t,i) => renderTaskItem(t,i)).join('')+'</div>';
 }
 
 // DETAIL SHEET
 function openDetail(task) {
   currentTask = task;
-  const status = task.status;
-  const badgeClass = status === 'done' ? 'badge-green' : 'badge-blue';
-  const badgeText = status === 'done' ? '✅ Выполнено' : '📌 Запланировано';
-  $('sheet-badge').className = 'badge ' + badgeClass;
+  const badgeClass = task.status==='done' ? 'badge-green' : 'badge-blue';
+  const badgeText = task.status==='done' ? '✅ Выполнено' : '📌 Запланировано';
+  $('sheet-badge').className = 'badge '+badgeClass;
   $('sheet-badge').textContent = badgeText;
   $('sheet-title').textContent = task.task;
-  $('sheet-meta').textContent = '🏠 ' + task.venue + ' · ' + task.date + ' в ' + task.time;
+  $('sheet-meta').textContent = '🏠 '+task.venue+' · '+task.date+' в '+task.time;
   $('sf-venue').textContent = task.venue;
   $('sf-date').textContent = fmtDate(task.date);
   $('sf-time').textContent = task.time;
   $('sheet-overlay').classList.add('show');
 }
 function closeSheet() { $('sheet-overlay').classList.remove('show'); }
-$('sheet-overlay').addEventListener('click', e => { if (e.target === $('sheet-overlay')) closeSheet(); });
+$('sheet-overlay').addEventListener('click', e => { if(e.target===$('sheet-overlay')) closeSheet(); });
 
 async function markDone() {
   closeSheet(); toast('✅ Выполнено!');
-  taskCache = taskCache.filter(t => String(t.id) !== String(currentTask.id));
+  taskCache = taskCache.filter(t => String(t.id)!==String(currentTask.id));
   renderTasks();
-  try { await apiPut('/tasks', { id: currentTask.id, status: 'done' }); } catch(e) {}
+  try { await apiPut('/tasks', {id:currentTask.id, status:'done'}); } catch(e) {}
   loadHome();
 }
-
 async function doneById(id) {
   toast('✅ Выполнено!');
-  taskCache = taskCache.filter(t => String(t.id) !== String(id));
+  taskCache = taskCache.filter(t => String(t.id)!==String(id));
   renderTasks();
-  try { await apiPut('/tasks', { id, status: 'done' }); } catch(e) {}
+  try { await apiPut('/tasks', {id, status:'done'}); } catch(e) {}
 }
-
 async function confirmDelete() {
-  if (!confirm('Удалить задачу?')) return;
+  if(!confirm('Удалить задачу?')) return;
   closeSheet(); toast('🗑 Удалено');
-  try { await apiDelete('/tasks', { id: currentTask.id }); loadTasks(currentFilter); } catch(e) {}
+  try { await apiDelete('/tasks', {id:currentTask.id}); loadTasks(currentFilter); } catch(e) {}
 }
-
 async function delById(id) {
-  if (!confirm('Удалить?')) return;
-  taskCache = taskCache.filter(t => String(t.id) !== String(id));
+  if(!confirm('Удалить?')) return;
+  taskCache = taskCache.filter(t => String(t.id)!==String(id));
   renderTasks();
-  try { await apiDelete('/tasks', { id }); } catch(e) {}
+  try { await apiDelete('/tasks', {id}); } catch(e) {}
 }
 
-// EDIT
+// EDIT MODAL
 function editField(f) {
   editF = f;
-  const lbls = { task: 'Задача', venue: 'Заведение', date: 'Дата (ДД.ММ.ГГГГ)', time: 'Время (ЧЧ:ММ)' };
-  $('modal-title').textContent = lbls[f] || 'Редактировать';
-  $('modal-input').value = currentTask ? currentTask[f] || '' : '';
+  const lbls = {task:'Задача',venue:'Заведение',date:'Дата (ДД.ММ.ГГГГ)',time:'Время (ЧЧ:ММ)'};
+  $('modal-title').textContent = lbls[f]||'Редактировать';
+  $('modal-input').value = currentTask ? currentTask[f]||'' : '';
   $('modal-overlay').classList.add('show');
   setTimeout(() => $('modal-input').focus(), 300);
 }
-function inlineEdit(id, f) { const t = taskCache.find(t => String(t.id) === String(id)); if (t) { currentTask = t; editField(f); } }
-function closeModal() { $('modal-overlay').classList.remove('show'); }
-$('modal-overlay').addEventListener('click', e => { if (e.target === $('modal-overlay')) closeModal(); });
+function inlineEdit(id, f) { const t=taskCache.find(t=>String(t.id)===String(id)); if(t){currentTask=t;editField(f);} }
+function closeModal() { $('modal-overlay').classList.remove('show'); editF=null; }
+$('modal-overlay').addEventListener('click', e => { if(e.target===$('modal-overlay')) closeModal(); });
 
 async function saveEdit() {
   const val = $('modal-input').value.trim();
-  if (!val) { toast('Введи значение'); return; }
+  if(!val) { toast('Введи значение'); return; }
   closeModal();
-  if (editF === '__venue__') {
+  if(editF==='__venue__') {
     showL();
-    try { await apiPost('/venues', { name: val }); hideL(); toast('✓ Заведение добавлено'); loadVenues(); } catch(e) { hideL(); toast('Ошибка'); }
+    try { await apiPost('/venues', {name:val}); hideL(); toast('✓ Заведение добавлено'); loadVenues(); } catch(e) { hideL(); toast('Ошибка'); }
     return;
   }
-  if (currentTask) { currentTask[editF] = val; }
+  if(editF==='__rename_venue__') {
+    showL();
+    try { await apiPut('/venues', {id:currentVenue.id, name:val}); hideL(); toast('✓ Переименовано'); loadVenues(); closeVenuePage(); } catch(e) { hideL(); toast('Ошибка'); }
+    return;
+  }
+  if(editF==='__rename_user__') {
+    // просто обновляем username в БД через API
+    showL();
+    try {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({chat_id: currentEditUserId, text: `Ваш никнейм обновлён: ${val}`})
+      });
+      hideL(); toast('✓ Пользователь уведомлён'); loadUsers();
+    } catch(e) { hideL(); toast('Ошибка'); }
+    return;
+  }
   toast('✓ Сохранено');
-  try { if (currentTask) await apiPut('/tasks', { id: currentTask.id, [editF]: val }); } catch(e) {}
+  try { if(currentTask) await apiPut('/tasks', {id:currentTask.id, [editF]:val}); } catch(e) {}
 }
 
 // ADD TASK
 async function onAddTask() {
   showL();
-  try { venues = await apiGet('/venues'); venues = Array.isArray(venues) ? venues : []; } catch(e) { venues = []; }
+  try { venues = await apiGet('/venues'); venues = Array.isArray(venues)?venues:[]; } catch(e) { venues=[]; }
   hideL();
-  if (!venues.length) { showPage('no-venues'); return; }
+  if(!venues.length) { showPage('no-venues'); return; }
   buildAddForm(); showPage('add');
 }
 
+function addTaskFromVenue() {
+  if(!venues.length) return;
+  buildAddForm();
+  // Предвыбираем текущее заведение
+  if(currentVenue) {
+    selVenue = currentVenue.name;
+    setTimeout(() => {
+      document.querySelectorAll('#add-venue-chips .chip').forEach(c => {
+        c.classList.toggle('active', c.textContent===currentVenue.name);
+      });
+    }, 100);
+  }
+  $('add-back-btn').onclick = () => openVenuePage(currentVenue);
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  $('page-add').classList.add('active');
+}
+
 function buildAddForm() {
-  selVenue = venues[0]?.name || null; selDate = todayStr(); selPrio = 'mid';
+  selVenue = venues[0]?.name||null; selDate=todayStr(); selPrio='mid';
   $('add-venue-chips').innerHTML = venues.map(v =>
-    `<div class="chip${v.name === selVenue ? ' active' : ''}" onclick="pickVenue(this,'${v.name.replace(/'/g,"&#39;")}')">${v.name}</div>`
+    `<div class="chip${v.name===selVenue?' active':''}" onclick="pickVenue(this,'${v.name.replace(/'/g,"&#39;")}')">${v.name}</div>`
   ).join('');
   $('date-quick').innerHTML = [
-    { l: 'Сегодня', v: todayStr() }, { l: 'Завтра', v: dateN(1) },
-    { l: 'Послезав.', v: dateN(2) }, { l: 'Другая', v: 'custom' }
-  ].map(d => `<div class="dq-btn${d.v === todayStr() ? ' active' : ''}" onclick="pickDate(this,'${d.v}')">${d.l}</div>`).join('');
+    {l:'Сегодня',v:todayStr()},{l:'Завтра',v:dateN(1)},{l:'Послезав.',v:dateN(2)},{l:'Другая',v:'custom'}
+  ].map(d => `<div class="dq-btn${d.v===todayStr()?' active':''}" onclick="pickDate(this,'${d.v}')">${d.l}</div>`).join('');
   document.querySelectorAll('.prio-btn').forEach(b => b.classList.toggle('active', b.classList.contains('mid')));
-  $('add-task-input').value = ''; $('add-time-input').value = '';
-  $('add-date-custom').style.display = 'none'; $('add-date-custom').value = '';
+  $('add-task-input').value=''; $('add-time-input').value='';
+  $('add-date-custom').style.display='none'; $('add-date-custom').value='';
   $('add-back-btn').onclick = () => showPage('tasks');
 }
 
-function pickVenue(el, name) { document.querySelectorAll('#add-venue-chips .chip').forEach(c => c.classList.remove('active')); el.classList.add('active'); selVenue = name; }
-function pickDate(el, val) {
-  document.querySelectorAll('#date-quick .dq-btn').forEach(b => b.classList.remove('active')); el.classList.add('active');
-  if (val === 'custom') { $('add-date-custom').style.display = 'block'; selDate = null; setTimeout(() => $('add-date-custom').focus(), 100); }
-  else { $('add-date-custom').style.display = 'none'; selDate = val; }
+function pickVenue(el,name) { document.querySelectorAll('#add-venue-chips .chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); selVenue=name; }
+function pickDate(el,val) {
+  document.querySelectorAll('#date-quick .dq-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active');
+  if(val==='custom') { $('add-date-custom').style.display='block'; selDate=null; setTimeout(()=>$('add-date-custom').focus(),100); }
+  else { $('add-date-custom').style.display='none'; selDate=val; }
 }
-function setPrio(p, el) { document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); selPrio = p; }
+function setPrio(p,el) { document.querySelectorAll('.prio-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); selPrio=p; }
 
 async function submitTask() {
   const task = $('add-task-input').value.trim();
-  const date = selDate || $('add-date-custom').value.trim();
-  const time = $('add-time-input').value ? $('add-time-input').value.substring(0, 5) : '';
-  if (!selVenue) { toast('Выбери заведение'); return; }
-  if (!task) { toast('Введи задачу'); return; }
-  if (!date || !/^\d{2}\.\d{2}\.\d{4}$/.test(date)) { toast('Укажи дату ДД.ММ.ГГГГ'); return; }
-  if (!time) { toast('Укажи время'); return; }
+  const date = selDate||$('add-date-custom').value.trim();
+  const time = $('add-time-input').value?$('add-time-input').value.substring(0,5):'';
+  if(!selVenue){toast('Выбери заведение');return;}
+  if(!task){toast('Введи задачу');return;}
+  if(!date||!/^\d{2}\.\d{2}\.\d{4}$/.test(date)){toast('Укажи дату ДД.ММ.ГГГГ');return;}
+  if(!time){toast('Укажи время');return;}
   showL();
   try {
-    await apiPost('/tasks', { venue: selVenue, task, date, time, priority: selPrio });
+    await apiPost('/tasks', {venue:selVenue, task, date, time, priority:selPrio});
     hideL(); toast('✓ Задача добавлена'); showPage('tasks');
   } catch(e) { hideL(); toast('Ошибка сохранения'); }
 }
 
 async function addVenueFromEmpty() {
-  const name = $('nv-input').value.trim(); if (!name) { toast('Введи название'); return; }
+  const name = $('nv-input').value.trim(); if(!name){toast('Введи название');return;}
   showL();
   try {
-    await apiPost('/venues', { name });
-    venues = await apiGet('/venues'); venues = Array.isArray(venues) ? venues : [];
+    await apiPost('/venues', {name});
+    venues = await apiGet('/venues'); venues = Array.isArray(venues)?venues:[];
     hideL(); toast('✓ Заведение добавлено'); buildAddForm(); showPage('add');
   } catch(e) { hideL(); toast('Ошибка'); }
 }
@@ -714,76 +812,173 @@ async function addVenueFromEmpty() {
 async function loadVenues() {
   $('venues-list').innerHTML = '<div class="skel" style="height:72px;margin-bottom:10px"></div><div class="skel" style="height:72px;opacity:.6"></div>';
   try {
-    venues = await apiGet('/venues'); venues = Array.isArray(venues) ? venues : [];
-    renderVenues();
-  } catch(e) { $('venues-list').innerHTML = '<div class="empty-state">Ошибка</div>'; }
+    venues = await apiGet('/venues'); venues=Array.isArray(venues)?venues:[];
+    // Получаем кол-во задач для каждого заведения
+    const tasks = await apiGet('/tasks', {filter:'all'});
+    const allTasks = Array.isArray(tasks)?tasks:[];
+    const taskCount = {};
+    allTasks.forEach(t => { taskCount[t.venue]=(taskCount[t.venue]||0)+1; });
+    renderVenues(taskCount);
+  } catch(e) { $('venues-list').innerHTML='<div class="empty-state">Ошибка</div>'; }
 }
 
-function renderVenues() {
+function renderVenues(taskCount={}) {
   const l = $('venues-list');
-  if (!venues.length) { l.innerHTML = '<div class="empty-state"><div class="empty-icon">🏠</div><div class="empty-text">Заведений нет.<br>Добавь первое!</div></div>'; return; }
-  l.innerHTML = venues.map((v, i) =>
-    `<div class="venue-card anim-up" style="animation-delay:${i * .07}s">
-      <div class="vc-icon">🏠</div>
-      <div class="vc-info"><div class="vc-name">${v.name}</div><div class="vc-sub">Активных задач: ${v.task_count || 0}</div></div>
-      <div class="vc-arrow">→</div>
+  if(!venues.length) { l.innerHTML='<div class="empty-state"><div class="empty-icon">🏠</div><div class="empty-text">Заведений нет.<br>Добавь первое!</div></div>'; return; }
+  l.innerHTML = venues.map((v,i) => `
+    <div class="venue-card anim-up" style="animation-delay:${i*.07}s" onclick="openVenuePage(${esc(v)})">
+      <div class="vc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="22" x2="15" y2="12"/><line x1="9" y1="12" x2="15" y2="12"/></svg></div>
+      <div class="vc-info">
+        <div class="vc-name">${v.name}</div>
+        <div class="vc-sub">${taskCount[v.name]||0} активных задач</div>
+      </div>
+      <div class="vc-actions" onclick="event.stopPropagation()">
+        <button class="vc-btn vc-btn-edit" onclick="renameVenue(${esc(v)})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="vc-btn vc-btn-del" onclick="deleteVenue(${esc(v)})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+      </div>
     </div>`
   ).join('');
 }
 
 function addVenuePrompt() {
-  editF = '__venue__'; $('modal-title').textContent = 'Новое заведение';
-  $('modal-input').value = ''; $('modal-input').placeholder = 'Название заведения';
-  $('modal-overlay').classList.add('show'); setTimeout(() => $('modal-input').focus(), 300);
+  editF='__venue__'; $('modal-title').textContent='Новое заведение';
+  $('modal-input').value=''; $('modal-input').placeholder='Название заведения';
+  $('modal-overlay').classList.add('show'); setTimeout(()=>$('modal-input').focus(),300);
+}
+
+async function renameVenue(venue) {
+  currentVenue = venue; editF='__rename_venue__';
+  $('modal-title').textContent='Переименовать заведение';
+  $('modal-input').value=venue.name;
+  $('modal-overlay').classList.add('show'); setTimeout(()=>$('modal-input').focus(),300);
+}
+
+async function deleteVenue(venue) {
+  if(!confirm(`Удалить заведение "${venue.name}"? Задачи останутся.`)) return;
+  showL();
+  try { await apiDelete('/venues', {id:venue.id}); hideL(); toast('🗑 Заведение удалено'); loadVenues(); } catch(e) { hideL(); toast('Ошибка'); }
+}
+
+// VENUE PAGE
+async function openVenuePage(venue) {
+  currentVenue = venue;
+  $('vp-name').textContent = venue.name;
+  $('vp-sub').textContent = 'Загрузка задач...';
+  $('venue-page').classList.add('show');
+  try {
+    const tasks = await apiGet('/tasks', {filter:'all'});
+    const allTasks = Array.isArray(tasks)?tasks:[];
+    const venueTasks = allTasks.filter(t => t.venue===venue.name);
+    $('vp-sub').textContent = venueTasks.length+' активных задач';
+    $('vp-tasks').innerHTML = venueTasks.length
+      ? venueTasks.map((t,i) => renderTaskItem(t,i)).join('')
+      : '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Нет задач для этого заведения</div></div>';
+  } catch(e) { $('vp-sub').textContent='Ошибка загрузки'; }
+}
+
+function closeVenuePage() { $('venue-page').classList.remove('show'); }
+
+function editCurrentVenue() { if(currentVenue) renameVenue(currentVenue); }
+
+async function deleteCurrentVenue() {
+  if(!currentVenue) return;
+  if(!confirm(`Удалить заведение "${currentVenue.name}"?`)) return;
+  showL();
+  try { await apiDelete('/venues', {id:currentVenue.id}); hideL(); toast('🗑 Заведение удалено'); closeVenuePage(); loadVenues(); } catch(e) { hideL(); toast('Ошибка'); }
 }
 
 // ADMIN
 function openAdmin() { $('admin-page').classList.add('show'); loadUsers(); }
 function closeAdmin() { $('admin-page').classList.remove('show'); }
 
+let currentEditUserId = null;
+
 async function loadUsers() {
   try {
     const users = await apiGet('/users');
-    if (!users || !users.length) { $('users-list').innerHTML = '<div style="color:var(--text2);font-size:13px">Пользователей нет</div>'; return; }
-    $('users-list').innerHTML = users.map((u, i) =>
-      `<div class="user-row anim-up" style="animation-delay:${i * .05}s">
+    if(!users||!users.length) { $('users-list').innerHTML='<div style="color:var(--text2);font-size:13px">Пользователей нет</div>'; return; }
+    $('users-list').innerHTML = users.map((u,i) => `
+      <div class="user-row anim-up" style="animation-delay:${i*.05}s">
         <div class="user-av">👤</div>
         <div class="user-info">
-          <div class="user-name">${u.username || 'Без имени'}</div>
-          <div class="user-date">С ${new Date(u.registered_at).toLocaleDateString('ru-RU')}</div>
+          <div class="user-name">${u.username||'Без имени'}</div>
+          <div class="user-date">С ${new Date(u.registered_at).toLocaleDateString('ru-RU')} · ID: ${u.id}</div>
         </div>
-        <div class="badge badge-green">Активен</div>
+        <div class="user-actions">
+          <button class="user-btn user-btn-edit" onclick="editUser('${u.id}','${u.username||''}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="user-btn user-btn-del" onclick="deleteUser('${u.id}','${u.username||''}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+        </div>
       </div>`
     ).join('');
-  } catch(e) { $('users-list').innerHTML = '<div style="color:var(--text2);font-size:13px">Ошибка загрузки</div>'; }
+  } catch(e) { $('users-list').innerHTML='<div style="color:var(--text2);font-size:13px">Ошибка загрузки</div>'; }
+}
+
+function editUser(id, username) {
+  currentEditUserId = id; editF='__rename_user__';
+  $('modal-title').textContent='Изменить имя пользователя';
+  $('modal-input').value = username;
+  $('modal-overlay').classList.add('show'); setTimeout(()=>$('modal-input').focus(),300);
+}
+
+async function deleteUser(id, username) {
+  if(!confirm(`Удалить пользователя ${username||id}?`)) return;
+  showL();
+  try {
+    // Удаляем пользователя и его данные из БД
+    await fetch(`${API}/users?id=${id}`, {method:'DELETE'});
+    hideL(); toast('🗑 Пользователь удалён'); loadUsers();
+  } catch(e) { hideL(); toast('Ошибка'); }
 }
 
 function updatePreview() {
   const text = $('bc-text').value.trim();
-  const p = $('bc-preview');
-  p.textContent = text || 'Начни вводить текст...';
+  $('bc-preview').textContent = text||'Начни вводить текст...';
+}
+
+function onPhoto(input) {
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const r = e.target.result; pb64=r.split(',')[1]; pmime=file.type;
+    const t=$('photo-thumb'); t.src=r; t.style.display='block';
+    $('photo-zone').querySelector('.photo-zone-text').textContent='✅ Фото выбрано';
+  };
+  reader.readAsDataURL(file);
 }
 
 async function sendBroadcast() {
   const text = $('bc-text').value.trim();
-  if (!text) { toast('Введи текст'); return; }
+  if(!text&&!pb64){toast('Введи текст или добавь фото');return;}
   showL();
   try {
     const users = await apiGet('/users');
-    if (!users || !users.length) { hideL(); toast('Нет пользователей'); return; }
-    let sent = 0;
-    for (const u of users) {
+    if(!users||!users.length){hideL();toast('Нет пользователей');return;}
+    let sent=0;
+    for(const u of users) {
       try {
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: String(u.id), text, parse_mode: 'HTML' })
-        });
+        if(pb64) {
+          const fd=new FormData();
+          fd.append('chat_id',String(u.id));
+          if(text) fd.append('caption',text);
+          fd.append('parse_mode','HTML');
+          const bc=atob(pb64); const bn=new Uint8Array(bc.length);
+          for(let i=0;i<bc.length;i++) bn[i]=bc.charCodeAt(i);
+          fd.append('photo',new Blob([bn],{type:pmime||'image/jpeg'}),'photo.jpg');
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`,{method:'POST',body:fd});
+        } else {
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({chat_id:String(u.id),text,parse_mode:'HTML'})
+          });
+        }
         sent++;
-      } catch(e) {}
+      } catch(e){}
     }
     hideL(); toast(`✓ Отправлено ${sent} пользователям`);
-    $('bc-text').value = ''; updatePreview();
-  } catch(e) { hideL(); toast('Ошибка'); }
+    $('bc-text').value=''; updatePreview();
+    $('photo-thumb').style.display='none'; $('photo-thumb').src=''; pb64=null; pmime=null;
+    $('photo-zone').querySelector('.photo-zone-text').textContent='📎 Прикрепить фото (необязательно)';
+  } catch(e){hideL();toast('Ошибка');}
 }
 
 init();
