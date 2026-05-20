@@ -201,18 +201,22 @@ async function sendTG(chatId, text) {
 async function morningDigest() {
   const h = nowTZ().getHours();
   if (h !== 8) return;
-  const users = await pool.query('SELECT id FROM users');
+  const today = todayStr();
+  const users = await pool.query(
+    'SELECT * FROM users WHERE morning_sent IS DISTINCT FROM $1::date',
+    [new Date().toISOString().split('T')[0]]
+  );
   for (const u of users.rows) {
     try {
       const tasks = await pool.query(
         `SELECT * FROM tasks WHERE user_id=$1 AND date=$2 AND status!='done' ORDER BY time`,
-        [u.id, todayStr()]
+        [u.id, today]
       );
       let text = `🌅 <b>Доброе утро, шеф!</b>\n\n`;
       if (!tasks.rows.length) {
         text += `На сегодня задач нет.\n\nХорошего дня! 💪`;
       } else {
-        text += `📅 План на <b>${todayStr()}</b>:\n\n`;
+        text += `📅 План на <b>${today}</b>:\n\n`;
         const byVenue = {};
         tasks.rows.forEach(t => {
           byVenue[t.venue] = byVenue[t.venue] || [];
@@ -226,6 +230,10 @@ async function morningDigest() {
         text += `🔥 Всего: ${tasks.rows.length} задач`;
       }
       await sendTG(u.id, text);
+      await pool.query(
+        'UPDATE users SET morning_sent=$1 WHERE id=$2',
+        [new Date().toISOString().split('T')[0], u.id]
+      );
     } catch(e) {}
   }
 }
