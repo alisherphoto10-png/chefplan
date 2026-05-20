@@ -35,6 +35,7 @@ async function initDB() {
     id BIGINT PRIMARY KEY,
     username TEXT,
     first_name TEXT,
+    morning_sent DATE,
     registered_at TIMESTAMP DEFAULT NOW()
   )`);
   await pool.query(`CREATE TABLE IF NOT EXISTS venues (
@@ -55,6 +56,10 @@ async function initDB() {
     reminded BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW()
   )`);
+  // Добавляем колонку morning_sent если её нет
+  try {
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS morning_sent DATE`);
+  } catch(e) {}
   console.log('✅ База данных готова');
 }
 
@@ -76,7 +81,7 @@ bot.start(async (ctx) => {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [[
-          { text: '📋 Открыть ChefPlan', web_app: { url: 'https://chefplan.vercel.app?uid=' + id } }
+          { text: '📋 Открыть ChefPlan', web_app: { url: 'https://chefplan.ru/app.html?uid=' + id } }
         ]]
       }
     }
@@ -256,7 +261,7 @@ async function checkReminders() {
     const [th, tm] = task.time.split(':').map(Number);
     const taskMin = th * 60 + tm;
     const diff = taskMin - totalMin;
-    if (diff >= 25 && diff <= 35) {
+    if (diff >= 28 && diff <= 32) {
       await sendTG(task.uid,
         `⏰ <b>Напоминание!</b>\n\n` +
         `📍 ${task.venue}\n` +
@@ -268,7 +273,6 @@ async function checkReminders() {
   }
 }
 
-// Запускаем проверки каждые 5 минут
 setInterval(async () => {
   try {
     await morningDigest();
@@ -287,4 +291,3 @@ initDB().then(() => {
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
-
