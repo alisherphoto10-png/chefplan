@@ -1,368 +1,751 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChefPlan — Планировщик шефа</title>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#030508;--indigo:#6366F1;--purple:#A78BFA;--green:#10B981;--text:#F0F4FF;--text2:#5B6B8A}
-html{scroll-behavior:smooth}
-body{background:var(--bg);font-family:'Onest',sans-serif;color:var(--text);overflow-x:hidden}
-canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
-.noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefPlan — Умный ежедневник для шефа</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #121315;
+            --bg-graphite: #1a1b1e;
+            --yellow-accent: #f0c24d;
+            --yellow-hover: #dbaf39;
+            --text-main: #e2e8f0;
+            --text-muted: #8a8f98;
+            --notebook-bg: #f4edd9;
+            --notebook-lines: #e3dac9;
+            --glass-bg: rgba(26, 27, 30, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --font-handwritten: 'Caveat', cursive;
+        }
 
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 60px;display:flex;align-items:center;justify-content:space-between;background:rgba(3,5,8,.8);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.04)}
-.logo{font-family:'Unbounded',sans-serif;font-size:16px;font-weight:900;letter-spacing:-.02em}
-.logo span{color:var(--indigo)}
-.nav-links{display:flex;gap:32px}
-.nav-links a{font-size:13px;color:var(--text2);text-decoration:none;transition:color .2s;font-weight:500}
-.nav-links a:hover{color:var(--text)}
-.nav-cta{background:var(--indigo);color:#fff;padding:10px 24px;border-radius:100px;font-size:13px;font-weight:700;text-decoration:none;transition:all .3s;box-shadow:0 0 0 0 rgba(99,102,241,.4)}
-.nav-cta:hover{box-shadow:0 0 30px rgba(99,102,241,.5);transform:translateY(-1px)}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
 
-/* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 20px 80px;position:relative;z-index:2}
-.hero-badge{display:inline-flex;align-items:center;gap:10px;margin-bottom:32px;animation:up .8s ease .1s both}
-.badge-line{width:36px;height:1px;background:var(--indigo);opacity:.6}
-.badge-text{font-size:11px;font-weight:700;color:var(--indigo);letter-spacing:.15em;text-transform:uppercase}
-h1{font-family:'Unbounded',sans-serif;font-size:clamp(40px,9vw,100px);font-weight:900;letter-spacing:-.04em;line-height:.92;margin-bottom:24px;animation:up .8s ease .2s both}
-h1 .line1{display:block;color:var(--text)}
-h1 .line2{display:block;background:linear-gradient(135deg,var(--indigo),var(--purple),#60A5FA,var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:300%;animation:grad 6s ease infinite}
-.hero-p{font-size:clamp(15px,2vw,19px);color:var(--text2);max-width:520px;line-height:1.75;margin-bottom:44px;animation:up .8s ease .3s both}
-.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:up .8s ease .4s both}
-.btn-primary{background:var(--indigo);color:#fff;padding:17px 38px;border-radius:100px;font-size:15px;font-weight:700;text-decoration:none;transition:all .3s;display:inline-flex;align-items:center;gap:10px;position:relative;overflow:hidden}
-.btn-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);opacity:0;transition:.3s}
-.btn-primary:hover::before{opacity:1}
-.btn-primary:hover{transform:translateY(-3px);box-shadow:0 20px 50px rgba(99,102,241,.35)}
-.btn-ghost{color:var(--text);padding:17px 38px;border-radius:100px;font-size:15px;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.1);transition:all .3s;backdrop-filter:blur(8px)}
-.btn-ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04);transform:translateY(-3px)}
-.scroll-hint{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;animation:up .8s ease 1s both}
-.scroll-hint-txt{font-size:10px;color:var(--text2);letter-spacing:.12em;text-transform:uppercase}
-.scroll-line{width:1px;height:44px;background:linear-gradient(var(--indigo),transparent);animation:pulse 2s ease-in-out infinite}
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
 
-/* STATS */
-.stats{position:relative;z-index:2;padding:0 60px;margin-bottom:100px}
-.stats-box{border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:28px 48px;display:flex;justify-content:space-around;align-items:center;background:rgba(255,255,255,.018);backdrop-filter:blur(10px)}
-.s-item{text-align:center}
-.s-num{font-family:'Unbounded',sans-serif;font-size:clamp(24px,4vw,44px);font-weight:900;letter-spacing:-.03em;line-height:1;background:linear-gradient(135deg,#fff,rgba(255,255,255,.5));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.s-lbl{font-size:11px;color:var(--text2);margin-top:5px;font-weight:500;letter-spacing:.04em}
-.s-div{width:1px;height:40px;background:rgba(255,255,255,.05)}
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
 
-/* FEATURES */
-.section{position:relative;z-index:2;padding:0 60px 100px;max-width:1300px;margin:0 auto}
-.eyebrow{font-size:10px;font-weight:700;color:var(--indigo);letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
-.eyebrow::before{content:'';width:28px;height:1px;background:var(--indigo)}
-.sec-h{font-family:'Unbounded',sans-serif;font-size:clamp(26px,4vw,50px);font-weight:900;letter-spacing:-.03em;line-height:1.05;margin-bottom:14px}
-.sec-h em{font-style:normal;background:linear-gradient(135deg,var(--indigo),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sec-p{font-size:16px;color:var(--text2);line-height:1.75;max-width:420px;margin-bottom:52px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.04);border-radius:20px;overflow:hidden}
-.card{background:var(--bg);padding:36px;transition:background .3s;position:relative;overflow:hidden}
-.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.2),transparent);opacity:0;transition:.3s}
-.card:hover{background:#07090F}
-.card:hover::after{opacity:1}
-.card-n{font-family:'Unbounded',sans-serif;font-size:10px;font-weight:700;color:rgba(99,102,241,.3);letter-spacing:.1em;margin-bottom:20px}
-.card-icon{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;transition:transform .3s}
-.card:hover .card-icon{transform:scale(1.08) rotate(-3deg)}
-.card-icon svg{width:19px;height:19px}
-.card-t{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.02em;margin-bottom:9px}
-.card-d{font-size:13px;color:var(--text2);line-height:1.7}
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-/* NOTIFICATIONS */
-.notif{position:relative;z-index:2;padding:0 60px 100px;max-width:1300px;margin:0 auto}
-.notif-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
-.phone-wrap{position:relative;display:inline-block}
-.phone-aura{position:absolute;inset:-80px;background:radial-gradient(circle,rgba(99,102,241,.1),transparent 65%);border-radius:50%;animation:breathe 5s ease-in-out infinite;pointer-events:none}
-.phone{width:270px;height:540px;background:#06080F;border-radius:38px;border:1px solid rgba(99,102,241,.15);overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03)}
-.ph-status{height:36px;display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0;font-size:10px;color:rgba(255,255,255,.25)}
-.msg{margin:6px 10px;background:rgba(255,255,255,.038);border:1px solid rgba(99,102,241,.1);border-radius:14px;padding:12px 14px;position:relative;overflow:hidden}
-.msg::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px}
-.msg.blue::before{background:var(--indigo)}
-.msg.green::before{background:var(--green)}
-.msg-top{display:flex;align-items:center;gap:7px;margin-bottom:7px}
-.msg-av{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--indigo),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
-.msg-name{font-size:10px;font-weight:700}
-.msg-time{font-size:8px;color:var(--text2);margin-left:auto}
-.msg-body{font-size:10px;color:rgba(255,255,255,.6);line-height:1.6}
-.msg-body b{color:var(--text);font-weight:600}
-.float-card{position:absolute;right:-30px;top:100px;background:#0E1525;border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:12px 16px;width:190px;box-shadow:0 20px 40px rgba(0,0,0,.5);animation:float 4s ease-in-out infinite}
-.float-t{font-size:9px;font-weight:700;color:var(--green);margin-bottom:5px}
-.float-d{font-size:10px;color:rgba(255,255,255,.5);line-height:1.5}
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+        }
 
-/* HOW */
-.how{position:relative;z-index:2;padding:0 60px 100px;max-width:1300px;margin:0 auto;text-align:center}
-.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:56px}
-.how-card{padding:44px 36px;background:rgba(255,255,255,.012);border-radius:18px;transition:background .3s}
-.how-card:hover{background:rgba(99,102,241,.04)}
-.how-n{font-family:'Unbounded',sans-serif;font-size:44px;font-weight:900;color:rgba(99,102,241,.08);line-height:1;margin-bottom:18px}
-.how-icon{width:50px;height:50px;border-radius:17px;background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.14);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:var(--indigo)}
-.how-icon svg{width:22px;height:22px}
-.how-t{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.02em;margin-bottom:9px}
-.how-d{font-size:13px;color:var(--text2);line-height:1.7}
+        .btn-primary { background-color: var(--yellow-accent); color: #000; border: none; }
+        .btn-primary:hover { background-color: var(--yellow-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(240,194,77,0.2); }
 
-/* CTA */
-.cta{position:relative;z-index:2;padding:0 60px 80px;text-align:center}
-.cta-box{max-width:800px;margin:0 auto;position:relative}
-.cta-glow{position:absolute;inset:-100px;background:radial-gradient(ellipse,rgba(99,102,241,.07),transparent 65%);pointer-events:none}
-.cta h2{font-family:'Unbounded',sans-serif;font-size:clamp(30px,5vw,60px);font-weight:900;letter-spacing:-.04em;line-height:.97;margin-bottom:18px}
-.cta h2 em{font-style:normal;background:linear-gradient(135deg,var(--indigo),var(--purple),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.cta p{font-size:16px;color:var(--text2);margin-bottom:38px;line-height:1.7}
-.cta-note{font-size:12px;color:var(--text2);margin-top:14px;opacity:.5}
+        .btn-secondary { background-color: transparent; color: var(--text-main); border: 1px solid rgba(255,255,255,0.15); }
+        .btn-secondary:hover { background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
 
-footer{position:relative;z-index:2;padding:36px 60px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between}
-.f-logo{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:900}
-.f-logo span{color:var(--indigo)}
-.f-copy{font-size:11px;color:var(--text2)}
-.f-link{font-size:12px;color:var(--indigo);text-decoration:none;font-weight:600}
+        /* HEADER */
+        header {
+            padding: 24px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            background: rgba(18,19,21,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
 
-@keyframes up{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
-@keyframes grad{0%,100%{background-position:0%}50%{background-position:100%}}
-@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
-@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-@keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-8px) rotate(1deg)}}
+        header .container { display: flex; justify-content: space-between; align-items: center; }
 
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
-.reveal.on{opacity:1;transform:none}
-.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+        .logo { font-size: 24px; font-weight: 700; color: var(--text-main); text-decoration: none; }
+        .logo span { color: var(--yellow-accent); }
 
-@media(max-width:900px){
-  nav{padding:14px 20px}.nav-links{display:none}
-  .hero{padding:100px 20px 70px}
-  .stats,.section,.notif,.how,.cta{padding-left:20px;padding-right:20px}
-  .stats-box{flex-wrap:wrap;gap:20px}.s-div{display:none}
-  .grid3,.notif-grid,.how-grid{grid-template-columns:1fr}
-  footer{flex-direction:column;gap:10px;text-align:center;padding:28px 20px}
-}
-</style>
+        nav { display: flex; gap: 32px; }
+        nav a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        nav a:hover { color: var(--text-main); }
+
+        /* HERO */
+        .hero {
+            padding-top: 140px;
+            padding-bottom: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-title {
+            font-size: 54px;
+            font-weight: 300;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+
+        .hero-title .handwritten {
+            font-family: var(--font-handwritten);
+            color: var(--yellow-accent);
+            font-size: 64px;
+            display: inline-block;
+            transform: rotate(-2deg);
+            margin-left: 5px;
+        }
+
+        .hero-desc {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 460px;
+            font-weight: 300;
+            line-height: 1.7;
+        }
+
+        .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+
+        /* PROBLEM → SOLUTION */
+        .problem-section {
+            padding: 80px 0;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: linear-gradient(180deg, rgba(240,194,77,0.03) 0%, transparent 100%);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr;
+            gap: 0;
+            align-items: center;
+        }
+
+        .problem-block, .solution-block {
+            padding: 40px;
+            border-radius: 16px;
+        }
+
+        .problem-block {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .solution-block {
+            background: rgba(240,194,77,0.05);
+            border: 1px solid rgba(240,194,77,0.15);
+        }
+
+        .block-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .block-label.problem { color: #ef4444; }
+        .block-label.solution { color: var(--yellow-accent); }
+
+        .block-label::before {
+            content: '';
+            width: 20px;
+            height: 1.5px;
+        }
+
+        .block-label.problem::before { background: #ef4444; }
+        .block-label.solution::before { background: var(--yellow-accent); }
+
+        .problem-item, .solution-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 15px;
+            line-height: 1.55;
+        }
+
+        .problem-item:last-child, .solution-item:last-child { margin-bottom: 0; }
+
+        .problem-item { color: var(--text-muted); }
+        .solution-item { color: var(--text-main); }
+
+        .pi-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+        .arrow-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: var(--yellow-accent);
+        }
+
+        /* NOTEBOOK */
+        .hero-right {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .notebook-container {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            transform: rotate(2deg);
+            transition: transform 0.5s ease;
+        }
+
+        .notebook-container:hover { transform: rotate(0deg) scale(1.02); }
+
+        .notebook-shadow {
+            position: absolute;
+            top: 15px; left: 15px; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            border-radius: 8px;
+            filter: blur(15px);
+            z-index: 1;
+        }
+
+        .notebook {
+            position: relative;
+            z-index: 2;
+            background-color: var(--notebook-bg);
+            background-image: linear-gradient(var(--notebook-lines) 1px, transparent 1px);
+            background-size: 100% 28px;
+            border-radius: 6px 12px 12px 6px;
+            padding: 40px 30px 30px 50px;
+            color: #2c2d30;
+            box-shadow: inset 15px 0 20px rgba(0,0,0,0.05), 2px 2px 5px rgba(0,0,0,0.1);
+            min-height: 560px;
+        }
+
+        .notebook-rings {
+            position: absolute;
+            left: 12px; top: 40px; bottom: 40px;
+            width: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 3;
+        }
+
+        .ring {
+            width: 24px; height: 10px;
+            background: linear-gradient(90deg, #555, #ccc, #888, #333);
+            border-radius: 4px;
+            transform: translateX(-8px);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+        }
+
+        .notebook-header {
+            margin-bottom: 24px;
+            border-bottom: 2px solid #d3c7b1;
+            padding-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .notebook-date { font-family: var(--font-handwritten); font-size: 28px; color: #4a5568; }
+
+        .notebook-todo-list { display: flex; flex-direction: column; gap: 4px; }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            height: 28px;
+            font-family: var(--font-handwritten);
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .todo-item input[type="checkbox"] { margin-right: 12px; width: 16px; height: 16px; accent-color: #4a5568; cursor: pointer; }
+        .todo-item.done { text-decoration: line-through; opacity: 0.5; }
+
+        .sticky-note {
+            position: absolute;
+            right: -40px; top: -30px;
+            background: #fbf6bd;
+            color: #4a4512;
+            padding: 16px;
+            width: 140px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            transform: rotate(6deg);
+            z-index: 4;
+            font-family: var(--font-handwritten);
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .sticky-note:hover { transform: rotate(-2deg) scale(1.05); }
+
+        /* STEPS */
+        .steps-section {
+            padding: 100px 0;
+            position: relative;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 400;
+            margin-bottom: 60px;
+        }
+
+        .section-title span { font-family: var(--font-handwritten); color: var(--yellow-accent); font-size: 44px; }
+
+        .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+
+        .step-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 32px 24px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover { transform: translateY(-5px); border-color: rgba(240,194,77,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+        .step-icon { font-size: 32px; margin-bottom: 20px; display: inline-block; }
+        .step-h { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+        .step-p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+        /* APP SECTION */
+        .app-section {
+            padding: 100px 0;
+            background: linear-gradient(180deg, var(--bg-dark) 0%, #161719 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+
+        .feature-check { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+        .feature-check svg { flex-shrink: 0; margin-top: 4px; color: var(--yellow-accent); }
+        .feature-check p { font-size: 16px; color: var(--text-main); line-height: 1.55; }
+
+        .app-right-display { position: relative; display: flex; justify-content: center; align-items: center; }
+
+        .mockup-phone {
+            width: 300px; height: 600px;
+            background: #000;
+            border: 8px solid #2c2d30;
+            border-radius: 36px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+        }
+
+        .phone-screen { background: #161719; height: 100%; width: 100%; padding: 24px 16px; font-size: 13px; }
+        .phone-header { font-weight: 600; margin-bottom: 20px; display: flex; justify-content: space-between; color: var(--text-muted); }
+        .phone-widget { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+        .phone-task { display: flex; align-items: center; gap: 10px; margin-top: 10px; color: var(--text-muted); }
+
+        .tg-notification {
+            position: absolute;
+            right: -40px; top: 25%;
+            background: rgba(26,27,30,0.85);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 14px;
+            padding: 16px;
+            width: 260px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            z-index: 3;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .tg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .tg-logo-text { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; color: #4ba3e3; }
+
+        /* CTA */
+        .cta-section { padding: 100px 0; text-align: center; }
+
+        .cta-box {
+            background: radial-gradient(circle at top, rgba(240,194,77,0.08) 0%, transparent 70%);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 60px 20px;
+            border-radius: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-box h2 { font-size: 36px; font-weight: 400; margin-bottom: 16px; }
+        .cta-box p { color: var(--text-muted); margin-bottom: 32px; font-size: 16px; }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 32px 0;
+        }
+        footer .container { display: flex; justify-content: space-between; align-items: center; }
+        .foot-links { display: flex; gap: 24px; }
+        .foot-links a { color: var(--text-muted); text-decoration: none; font-size: 13px; transition: color 0.2s; }
+        .foot-links a:hover { color: var(--text-main); }
+        .foot-copy { font-size: 12px; color: var(--text-muted); }
+
+        /* REVEAL */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+
+        /* RESPONSIVE */
+        @media(max-width: 992px) {
+            .hero-grid, .app-grid { grid-template-columns: 1fr; gap: 50px; text-align: center; }
+            .hero-desc { margin: 0 auto 40px; }
+            .hero-actions { justify-content: center; }
+            .steps-grid { grid-template-columns: repeat(2, 1fr); }
+            .sticky-note { display: none; }
+            nav { display: none; }
+            .problem-grid { grid-template-columns: 1fr; gap: 20px; }
+            .arrow-center { transform: rotate(90deg); }
+            .tg-notification { right: 10px; top: auto; bottom: -20px; width: calc(100% - 20px); }
+        }
+
+        @media(max-width: 576px) {
+            .steps-grid { grid-template-columns: 1fr; }
+            .hero-title { font-size: 38px; }
+            .hero-title .handwritten { font-size: 46px; }
+            .notebook { padding: 40px 20px 20px 40px; }
+        }
+    </style>
 </head>
 <body>
-<canvas id="bg"></canvas>
-<div class="noise"></div>
 
-<nav>
-  <div class="logo">Chef<span>Plan</span></div>
-  <div class="nav-links">
-    <a href="#features">Функции</a>
-    <a href="#how">Как начать</a>
-  </div>
-  <a href="https://t.me/ChefPlan_testbot" class="nav-cta">Открыть в Telegram →</a>
-</nav>
-
-<section class="hero">
-  <div class="hero-badge">
-    <div class="badge-line"></div>
-    <div class="badge-text">Telegram Mini App для шефов</div>
-    <div class="badge-line"></div>
-  </div>
-  <h1>
-    <span class="line1">Кухня под</span>
-    <span class="line2">контролем</span>
-  </h1>
-  <p class="hero-p">Планируй задачи по заведениям, получай напоминания и держи всё под рукой — прямо в Telegram</p>
-  <div class="hero-btns">
-    <a href="https://t.me/ChefPlan_testbot" class="btn-primary">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-      Начать бесплатно
-    </a>
-    <a href="#features" class="btn-ghost">Узнать больше</a>
-  </div>
-  <div class="scroll-hint">
-    <div class="scroll-hint-txt">Scroll</div>
-    <div class="scroll-line"></div>
-  </div>
-</section>
-
-<div class="stats reveal">
-  <div class="stats-box">
-    <div class="s-item"><div class="s-num">24/7</div><div class="s-lbl">Работает без остановок</div></div>
-    <div class="s-div"></div>
-    <div class="s-item"><div class="s-num">30 сек</div><div class="s-lbl">Добавить задачу</div></div>
-    <div class="s-div"></div>
-    <div class="s-item"><div class="s-num">∞</div><div class="s-lbl">Заведений и задач</div></div>
-    <div class="s-div"></div>
-    <div class="s-item"><div class="s-num">0 ₽</div><div class="s-lbl">Стоимость сейчас</div></div>
-  </div>
-</div>
-
-<section class="section" id="features">
-  <div class="reveal">
-    <div class="eyebrow">Возможности</div>
-    <div class="sec-h">Всё что нужно<br><em>каждый день</em></div>
-    <div class="sec-p">Простой инструмент без лишнего — только то что реально помогает работать шефу</div>
-  </div>
-  <div class="grid3 reveal">
-    <div class="card">
-      <div class="card-n">01</div>
-      <div class="card-icon" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);color:var(--indigo)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M5 4h-1a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
-      </div>
-      <div class="card-t">Задачи по заведениям</div>
-      <div class="card-d">Создавай задачи для каждого заведения отдельно. Всё структурировано, ничего не теряется.</div>
-    </div>
-    <div class="card">
-      <div class="card-n">02</div>
-      <div class="card-icon" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);color:var(--green)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
-      </div>
-      <div class="card-t">Напоминания за 30 минут</div>
-      <div class="card-d">Бот сам напомнит о задаче за полчаса. Никогда больше не забудешь важное.</div>
-    </div>
-    <div class="card">
-      <div class="card-n">03</div>
-      <div class="card-icon" style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.15);color:var(--purple)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>
-      </div>
-      <div class="card-t">Утренняя сводка в 8:00</div>
-      <div class="card-d">Каждое утро получаешь план на день по всем заведениям. Начинаешь день подготовленным.</div>
-    </div>
-    <div class="card">
-      <div class="card-n">04</div>
-      <div class="card-icon" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);color:#F59E0B">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </div>
-      <div class="card-t">Планирование на неделю</div>
-      <div class="card-d">Горизонтальный календарь — видишь задачи на каждый день одним взглядом.</div>
-    </div>
-    <div class="card">
-      <div class="card-n">05</div>
-      <div class="card-icon" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);color:var(--indigo)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
-      </div>
-      <div class="card-t">Прогресс и статистика</div>
-      <div class="card-d">Видишь сколько задач выполнено за день. Мотивирует доводить дела до конца.</div>
-    </div>
-    <div class="card">
-      <div class="card-n">06</div>
-      <div class="card-icon" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);color:var(--green)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </div>
-      <div class="card-t">Для каждого свои данные</div>
-      <div class="card-d">Каждый шеф видит только свои задачи. Полная приватность и изоляция данных.</div>
-    </div>
-  </div>
-</section>
-
-<section class="notif">
-  <div class="notif-grid">
-    <div class="reveal">
-      <div class="eyebrow">Уведомления</div>
-      <div class="sec-h">Бот работает<br><em>за тебя</em></div>
-      <div class="sec-p">Не нужно помнить о задачах — ChefPlan сам напомнит в нужный момент и пришлёт утренний план</div>
-      <a href="https://t.me/ChefPlan_testbot" class="btn-primary" style="display:inline-flex">Попробовать бесплатно →</a>
-    </div>
-    <div class="reveal d2">
-      <div class="phone-wrap">
-        <div class="phone-aura"></div>
-        <div class="phone">
-          <div class="ph-status"><span>9:41</span><span>●●● 5G</span></div>
-          <div class="msg blue">
-            <div class="msg-top"><div class="msg-av">👨‍🍳</div><div class="msg-name">ChefPlan</div><div class="msg-time">08:00</div></div>
-            <div class="msg-body">🌅 <b>Доброе утро, шеф!</b><br><br>📅 План на сегодня:<br><br>📍 <b>Oko</b><br>&nbsp;🕐 14:00 — Закупка<br>&nbsp;🕐 18:00 — Совещание<br><br>🔥 Всего 3 задачи. Удачного дня!</div>
-          </div>
-          <div class="msg green" style="margin-top:8px">
-            <div class="msg-top"><div class="msg-av">👨‍🍳</div><div class="msg-name">ChefPlan</div><div class="msg-time">13:30</div></div>
-            <div class="msg-body">⏰ <b>Напоминание!</b><br><br>📍 Oko · Закупка продуктов<br>🕐 Через 30 минут — в 14:00</div>
-          </div>
+    <header>
+        <div class="container">
+            <a href="#" class="logo">Chef<span>Plan</span></a>
+            <nav>
+                <a href="#problem">Зачем это</a>
+                <a href="#workflow">Как работает</a>
+                <a href="#features">Возможности</a>
+                <a href="#cta">Попробовать</a>
+            </nav>
+            <a href="https://t.me/ChefPlanBot" class="btn btn-primary" style="padding: 8px 20px; font-size: 14px;">Попробовать бесплатно</a>
         </div>
-        <div class="float-card">
-          <div class="float-t">✅ Задача выполнена</div>
-          <div class="float-d">Закупка · Oko · 14:00</div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-grid">
+                
+                <div class="hero-left reveal">
+                    <h1 class="hero-title">
+                        Умный ежедневник<br>для <span class="handwritten">шефа</span>
+                    </h1>
+                    <p class="hero-desc">
+                        Задачи, напоминания, утренние сводки и планирование кухни — всё в одном месте. Не CRM, не система учёта. Просто твой личный рабочий инструмент.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="https://t.me/ChefPlanBot" class="btn btn-primary">Попробовать бесплатно</a>
+                        
+                    </div>
+                </div>
+
+                <div class="hero-right reveal reveal-delay-2">
+                    <div class="notebook-container">
+                        <div class="notebook-shadow"></div>
+                        
+                        <div class="sticky-note">
+                            <strong>Не забыть:</strong>
+                            <div style="margin-top: 8px; font-size: 16px; line-height: 1.3;">
+                                — Проверить холодильник<br>
+                                — Заказать специи<br>
+                                — Позвонить поставщику
+                            </div>
+                        </div>
+
+                        <div class="notebook-rings">
+                            <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+                            <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+                            <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+                        </div>
+
+                        <div class="notebook">
+                            <div class="notebook-header">
+                                <div class="notebook-date">Сегодня, 21 мая</div>
+                                <div style="font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 1px;">План дня</div>
+                            </div>
+
+                            <div class="notebook-todo-list">
+                                <label class="todo-item done">
+                                    <input type="checkbox" checked onclick="toggleTodo(this)">
+                                    <span>07:30 Утренний разбор</span>
+                                </label>
+                                <label class="todo-item done">
+                                    <input type="checkbox" checked onclick="toggleTodo(this)">
+                                    <span>08:00 Проверить заготовки</span>
+                                </label>
+                                <label class="todo-item">
+                                    <input type="checkbox" onclick="toggleTodo(this)">
+                                    <span>10:00 Закупка продуктов</span>
+                                </label>
+                                <label class="todo-item">
+                                    <input type="checkbox" onclick="toggleTodo(this)">
+                                    <span>12:00 Встреча с поставщиком</span>
+                                </label>
+                                <label class="todo-item">
+                                    <input type="checkbox" onclick="toggleTodo(this)">
+                                    <span>14:00 Обновить меню</span>
+                                </label>
+                                <label class="todo-item">
+                                    <input type="checkbox" onclick="toggleTodo(this)">
+                                    <span>16:00 Контроль смены</span>
+                                </label>
+                                <label class="todo-item">
+                                    <input type="checkbox" onclick="toggleTodo(this)">
+                                    <span>19:00 Анализ дня</span>
+                                </label>
+                            </div>
+                            
+                            <div style="margin-top: 40px; font-family: var(--font-handwritten); font-size: 20px; color: #718096; text-align: right; transform: rotate(-1deg)">
+                                Главное — порядок в голове,<br>остальное в ChefPlan.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<section class="how" id="how">
-  <div class="reveal">
-    <div class="eyebrow" style="justify-content:center">Как начать</div>
-    <div class="sec-h" style="max-width:none">Три шага до <em>первой задачи</em></div>
-  </div>
-  <div class="how-grid reveal">
-    <div class="how-card">
-      <div class="how-n">01</div>
-      <div class="how-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg></div>
-      <div class="how-t">Открой бота</div>
-      <div class="how-d">Найди @ChefPlan в Telegram и нажми /start — никакой регистрации</div>
-    </div>
-    <div class="how-card">
-      <div class="how-n">02</div>
-      <div class="how-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="22" x2="15" y2="12"/><line x1="9" y1="12" x2="15" y2="12"/></svg></div>
-      <div class="how-t">Добавь заведение</div>
-      <div class="how-d">Создай ресторан, кафе или любое другое место — займёт 10 секунд</div>
-    </div>
-    <div class="how-card">
-      <div class="how-n">03</div>
-      <div class="how-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-      <div class="how-t">Планируй</div>
-      <div class="how-d">Добавляй задачи и получай напоминания — бот всё делает за тебя</div>
-    </div>
-  </div>
-</section>
+    <!-- PROBLEM → SOLUTION -->
+    <section id="problem" class="problem-section">
+        <div class="container">
+            <h2 class="section-title reveal" style="margin-bottom: 48px;">
+                Знакомо? <span>Мы решили это.</span>
+            </h2>
 
-<section class="cta">
-  <div class="cta-box reveal">
-    <div class="cta-glow"></div>
-    <h2>Начни прямо<br><em>сейчас</em></h2>
-    <p>Бесплатно · Только Telegram · Без скачивания · Работает сразу</p>
-    <a href="https://t.me/ChefPlan_testbot" class="btn-primary" style="font-size:16px;padding:20px 48px">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-      Открыть ChefPlan
-    </a>
-    <div class="cta-note">Работает на iOS и Android · Данные защищены</div>
-  </div>
-</section>
+            <div class="problem-grid">
+                <div class="problem-block reveal">
+                    <div class="block-label problem">Проблема</div>
+                    <div class="problem-item">
+                        <span class="pi-icon">😤</span>
+                        <span>Задачи разбросаны по заметкам, чатам и голове — что-то всегда забывается</span>
+                    </div>
+                    <div class="problem-item">
+                        <span class="pi-icon">⏰</span>
+                        <span>Нет системы напоминаний — важные дела откладываются или пропускаются</span>
+                    </div>
+                    <div class="problem-item">
+                        <span class="pi-icon">📅</span>
+                        <span>Не видно картины недели — сложно планировать закупки и смены заранее</span>
+                    </div>
+                    <div class="problem-item">
+                        <span class="pi-icon">🔄</span>
+                        <span>Каждый день начинается с хаоса вместо чёткого плана</span>
+                    </div>
+                </div>
 
-<footer>
-  <div class="f-logo">Chef<span>Plan</span></div>
-  <div class="f-copy">© 2026 ChefPlan · Планировщик для шефов</div>
-  <a href="https://t.me/ChefPlan_testbot" class="f-link">Telegram →</a>
-</footer>
+                <div class="arrow-center reveal reveal-delay-1">→</div>
 
-<script>
-// CANVAS
-const canvas=document.getElementById('bg'),ctx=canvas.getContext('2d');
-let W,H;
-function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight}
-resize();window.addEventListener('resize',resize);
+                <div class="solution-block reveal reveal-delay-2">
+                    <div class="block-label solution">Решение</div>
+                    <div class="solution-item">
+                        <span class="pi-icon">✅</span>
+                        <span>Все задачи в одном месте — по заведениям, по датам, по приоритетам</span>
+                    </div>
+                    <div class="solution-item">
+                        <span class="pi-icon">🔔</span>
+                        <span>Умные напоминания за 30 минут — в приложении и прямо в Telegram</span>
+                    </div>
+                    <div class="solution-item">
+                        <span class="pi-icon">📊</span>
+                        <span>Недельный планировщик — видишь всё что предстоит и успеваешь подготовиться</span>
+                    </div>
+                    <div class="solution-item">
+                        <span class="pi-icon">☀️</span>
+                        <span>Утренняя сводка в 08:00 — день начинается с чёткого плана, а не с хаоса</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-const particles=[];
-class P{
-  constructor(){this.reset(true)}
-  reset(init=false){
-    this.x=Math.random()*W;
-    this.y=init?Math.random()*H:H+5;
-    this.r=Math.random()*1.2+.3;
-    this.vy=Math.random()*.35+.15;
-    this.vx=(Math.random()-.5)*.2;
-    this.life=0;this.maxLife=Math.random()*400+200;
-    this.alpha=0;this.maxAlpha=Math.random()*.5+.1;
-    const c=['99,102,241','167,139,250','16,185,129','255,255,255'];
-    this.c=c[Math.floor(Math.random()*c.length)];
-  }
-  tick(){
-    this.life++;this.y-=this.vy;this.x+=this.vx;
-    if(this.life<40)this.alpha+=this.maxAlpha/40;
-    else if(this.life>this.maxLife-40)this.alpha-=this.maxAlpha/40;
-    if(this.life>=this.maxLife||this.y<-5)this.reset();
-  }
-  draw(){
-    ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-    ctx.fillStyle=`rgba(${this.c},${Math.max(0,this.alpha)})`;ctx.fill();
-  }
-}
-for(let i=0;i<100;i++)particles.push(new P());
-function loop(){
-  ctx.clearRect(0,0,W,H);
-  particles.forEach(p=>{p.tick();p.draw()});
-  requestAnimationFrame(loop);
-}
-loop();
+    <!-- STEPS -->
+    <section id="workflow" class="steps-section">
+        <div class="container">
+            <h2 class="section-title reveal">Как проходит день с <span>ChefPlan</span></h2>
+            
+            <div class="steps-grid">
+                <div class="step-card reveal">
+                    <div class="step-icon">🌅</div>
+                    <h3 class="step-h">Утренняя сводка</h3>
+                    <p class="step-p">В 08:00 получаешь в Telegram план на день — сколько задач, что срочно, с чего начать.</p>
+                </div>
 
-// REVEAL
-const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on')}),{threshold:.1});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
-</script>
+                <div class="step-card reveal reveal-delay-1">
+                    <div class="step-icon">📋</div>
+                    <h3 class="step-h">Планируй и действуй</h3>
+                    <p class="step-p">Создавай задачи, привязывай к заведению, расставляй приоритеты. Всё просто и быстро.</p>
+                </div>
+
+                <div class="step-card reveal reveal-delay-2">
+                    <div class="step-icon">🔔</div>
+                    <h3 class="step-h">Умные напоминания</h3>
+                    <p class="step-p">За 30 минут до дедлайна — напоминание в телефоне и в Telegram. Ничего не пропустишь.</p>
+                </div>
+
+                <div class="step-card reveal reveal-delay-3">
+                    <div class="step-icon">📈</div>
+                    <h3 class="step-h">Анализируй и улучшай</h3>
+                    <p class="step-p">Смотри статистику недели, отмечай что выполнено и становись эффективнее каждый день.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="app-section">
+        <div class="container">
+            <div class="app-grid">
+                
+                <div class="reveal">
+                    <h2 class="hero-title" style="font-size: 40px; margin-bottom: 16px;">Твой рабочий день <br><span class="handwritten">в одном месте</span></h2>
+                    <p style="color: var(--text-muted); margin-bottom: 32px; font-size: 16px; line-height: 1.7;">Больше никаких разрозненных чатов, стикеров на холодильнике и потерянных напоминаний.</p>
+                    
+                    <div class="feature-check">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <p><strong>Задачи и подзадачи</strong> — создавай, редактируй, отмечай выполненными прямо в чате</p>
+                    </div>
+                    <div class="feature-check">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <p><strong>Несколько заведений</strong> — раздели задачи по местам работы, всё структурировано</p>
+                    </div>
+                    <div class="feature-check">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <p><strong>Недельный планировщик</strong> — видишь всю неделю наперёд, планируй без сюрпризов</p>
+                    </div>
+                    <div class="feature-check">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <p><strong>Telegram интеграция</strong> — сводки и напоминания приходят без необходимости открывать приложение</p>
+                    </div>
+                    <div class="feature-check">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <p><strong>Приоритеты и сроки</strong> — фокусируйся на том, что важно прямо сейчас</p>
+                    </div>
+                </div>
+
+                <div class="app-right-display reveal reveal-delay-2">
+                    <div class="mockup-phone">
+                        <div class="phone-screen">
+                            <div class="phone-header">
+                                <span>08:00</span>
+                                <span>ChefPlan</span>
+                            </div>
+                            <div style="font-weight: 600; font-size: 16px; margin-bottom: 14px;">Доброе утро, шеф 👨‍🍳</div>
+                            
+                            <div class="phone-widget">
+                                <div style="font-weight: 500; color: var(--yellow-accent);">☀️ Утренняя сводка</div>
+                                <div style="font-size: 11px; margin-top: 4px; color: var(--text-muted);">7 задач на сегодня · 2 срочных</div>
+                                <div style="font-size: 11px; margin-top: 2px; color: var(--text-muted);">Смотреть →</div>
+                            </div>
+
+                            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Мои задачи</div>
+                            <div class="phone-task" style="color: var(--text-main);"><span style="color: var(--yellow-accent);">✓</span> Утренний разбор</div>
+                            <div class="phone-task"><span>☐</span> Закупка продуктов (10:00)</div>
+                            <div class="phone-task"><span>☐</span> Встреча с поставщиком</div>
+                            <div class="phone-task"><span>☐</span> Контроль смены (16:00)</div>
+                        </div>
+                    </div>
+
+                    <div class="tg-notification">
+                        <div class="tg-header">
+                            <div class="tg-logo-text">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.37.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .32z"/></svg>
+                                CHEFPLAN
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-muted);">сейчас</span>
+                        </div>
+                        <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px; color: #fff;">🔔 Напоминание</div>
+                        <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Через 30 минут встреча с поставщиком. Не забудь!</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="cta" class="cta-section">
+        <div class="container">
+            <div class="cta-box reveal">
+                <h2>Попробуй ChefPlan <span style="font-family:var(--font-handwritten);color:var(--yellow-accent);font-size:44px;">бесплатно</span></h2>
+                <p>14 дней полного доступа. Без карты. Без обязательств.<br>Просто открой бота и начни планировать.</p>
+                <a href="https://t.me/ChefPlanBot" class="btn btn-primary" style="font-size: 16px; padding: 14px 36px;">Начать бесплатно в Telegram</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <a href="#" class="logo" style="font-size: 20px;">Chef<span>Plan</span></a>
+<div class="foot-copy">© 2026 ChefPlan</div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleTodo(checkbox) {
+            const label = checkbox.parentElement;
+            checkbox.checked ? label.classList.add('done') : label.classList.remove('done');
+        }
+
+        // Scroll reveal
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if(e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        reveals.forEach(el => observer.observe(el));
+
+        // Hero reveals immediately
+        setTimeout(() => {
+            document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('visible'));
+        }, 100);
+    </script>
 </body>
 </html>
